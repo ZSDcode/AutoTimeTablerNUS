@@ -1,0 +1,56 @@
+
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "C++: g++.exe build active file", // Main build task
+            "command": "C:\\msys64\\ucrt64\\bin\\g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g", // IMPORTANT: Generates debug symbols
+                "${file}",
+                "-o",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true // Can be default build via Ctrl+Shift+B
+            },
+            "detail": "Builds the active C++ file with g++."
+        },
+        {
+            "label": "clean active file exe", // More generic clean task
+            "type": "shell",
+            "command": "del", // Windows specific. Use 'rm' for Linux/macOS.
+            "args": [
+                "${fileBasenameNoExtension}.exe" // Dynamically cleans the current file's exe
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "build and clean (current file)", // NEW: Composite task for launch.json
+            "type": "shell", // Composite tasks need a type, shell or process works
+            "command": "", // No direct command for composite task itself
+            "dependsOn": [
+                "clean active file exe", // Run the clean task first
+                "C++: g++.exe build active file" // Then run the build task
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false // Do NOT set this as default build to avoid double builds
+            },
+            "detail": "Cleans the current executable, then builds the active C++ file."
+        }
+    ]
+}
