@@ -55,7 +55,7 @@ def generate_APIURL(modCode):
     yearKey = f"{currAcadYear}-{currAcadYear+1}"
     return f"https://api.nusmods.com/v2/{yearKey}/modules/{modCode}.json"
 
-def inputMod(currYear, semesterNo):
+def inputMod(semesterNo):
     while True:
         modCode = input("Please key in a Module (Press b to remove the previous added mod): ")
         try:
@@ -86,7 +86,7 @@ def gettingModules(noMods):
         if (count == noMods):
             return
         else:
-            modCode = inputMod(currAcadYear, semNo)
+            modCode = inputMod(semNo)
             if (modCode == 'b'):
                 if (count == 0):
                     count = count - 1
@@ -105,7 +105,52 @@ def gettingModules(noMods):
 semNo = gettingSemesterInput()
 noOfMods = gettingNoOfModules()
 modCodeList = gettingModules(noOfMods)
+modData = []
 
+for mod in modCodeList:
+    particularModData = {}
+    response = requests.get(generate_APIURL(mod))
+    data = response.json()
+    particularModData["moduleCode"] = data["moduleCode"]
+    particularModData["MCs"] = data["moduleCredit"]
+    semData = {}
+    for semDict in data["semesterData"]:
+        if (semDict["semester"] == semNo):
+            semData = semDict
+    particularModData["examDate"] = semData["examDate"][0:10]
+    examISOStartTime = semData["examDate"][11:-1]
+    examSGTStartTime = (int(examISOStartTime[0:2] + examISOStartTime[3:5]) + 800) % 2400
+    examSGTEndTime = int(examSGTStartTime + semData["examDuration"]/60 * 100)
+    particularModData["examStartTime"] = examSGTStartTime
+    particularModData["examEndTime"] = examSGTEndTime
+    particularModData["potentialLessons"] = []
+    intermediateGroupedLessons = {}
+    for slot in semData["timetable"]:
+        lessonType = slot["lessonType"]
+        classNo = slot["classNo"]
+        if lessonType not in intermediateGroupedLessons:
+            intermediateGroupedLessons[lessonType] = {}
+        if classNo not in intermediateGroupedLessons:
+            intermediateGroupedLessons[lessonType][classNo] = []
+        simplifiedTimeSlot = {"day":slot["day"], "startTime":int(slot["startTime"]), "endTime":int(slot["endTime"]), "location":slot["venue"]}
+        intermediateGroupedLessons[lessonType][classNo].append(simplifiedTimeSlot)
+    for lessonType in intermediateGroupedLessons.keys():
+        listOfTime = []
+        setListOfTime = {}
+        for classNo in intermediateGroupedLessons[lessonType].keys():
+            groupedTimeSlots = []
+            for timeSlot in intermediateGroupedLessons[lessonType][classNo]:
+                simplifiedFurther = (timeSlot["day"], timeSlot["startTime"], timeSlot["endTime"])
+                groupedTimeSlots.append(simplifiedFurther)
+            listOfTime.append(groupedTimeSlots)
+            setListOfTime = set(listOfTime)
+            if (len(setListOfTime) != len(listOfTime)):
+                listOfTime.pop()
+                del intermediateGroupedLessons[lessonType][classNo]
+    particularModData["potentialLessons"].append(intermediateGroupedLessons)
+    modData.append(particularModData)
+with open("SolutionToTimeTables\\ModuleData.json", "w"):
+    json.dump(modData, "SolutionToTimeTables\\ModuleData.json", indent=4)
 
 cppExecPath = "C:\\Users\\User\\repos\\TryingLearnCPP\\SolutionToTimeTables\\LogicOfTimetabling.exe"
 try:
