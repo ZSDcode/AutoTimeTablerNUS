@@ -17,6 +17,7 @@ Just a small project about planning a University Timetable using code
 Current Progress:
 Coded the backend logic for C++ to iterate through timetables
 Error handling of inputs
+Parsing Data Settled
 
 Next Step:
-Parsing Data!
+C++ to read json file and add into structs such that I can use timetable iteration
