@@ -57,7 +57,7 @@ def generate_APIURL(modCode):
 
 def inputMod(semesterNo):
     while True:
-        modCode = input("Please key in a Module (type in CAPS, Press b to remove the previous added mod): ")
+        modCode = input("Please key in a Module (Press b to remove the previous added mod): ").upper()
         try:
             if (modCode == 'b'):
                 return modCode
@@ -160,8 +160,8 @@ for mod in modCodeList:
                 listOfTime.pop()
                 dupeClasses.append(classNo)
         for dupeClass in dupeClasses:
-            del intermediateGroupedLessons[lessonType][dupeClass]
-                
+            if (intermediateGroupedLessons[lessonType][dupeClass][0]["location"] != "E-Learn_C"):
+                del intermediateGroupedLessons[lessonType][dupeClass]
     particularModData["potentialLessons"].append(intermediateGroupedLessons)
     modData.append(particularModData)
 with open("SolutionToTimeTables\\ModuleData.json", "w") as f:

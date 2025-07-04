@@ -366,6 +366,20 @@
                             "endTime": 1400,
                             "location": "LT11"
                         }
+                    ],
+                    "2": [
+                        {
+                            "day": "Friday",
+                            "startTime": 1300,
+                            "endTime": 1400,
+                            "location": "E-Learn_C"
+                        },
+                        {
+                            "day": "Thursday",
+                            "startTime": 1200,
+                            "endTime": 1400,
+                            "location": "E-Learn_C"
+                        }
                     ]
                 }
             }
