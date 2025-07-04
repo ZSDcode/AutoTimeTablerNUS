@@ -57,7 +57,7 @@ def generate_APIURL(modCode):
 
 def inputMod(semesterNo):
     while True:
-        modCode = input("Please key in a Module (Press b to remove the previous added mod): ")
+        modCode = input("Please key in a Module (type in CAPS, Press b to remove the previous added mod): ")
         try:
             if (modCode == 'b'):
                 return modCode
@@ -125,32 +125,47 @@ for mod in modCodeList:
     particularModData["examEndTime"] = examSGTEndTime
     particularModData["potentialLessons"] = []
     intermediateGroupedLessons = {}
+    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     for slot in semData["timetable"]:
         lessonType = slot["lessonType"]
         classNo = slot["classNo"]
         if lessonType not in intermediateGroupedLessons:
             intermediateGroupedLessons[lessonType] = {}
-        if classNo not in intermediateGroupedLessons:
+        if classNo not in intermediateGroupedLessons[lessonType]:
             intermediateGroupedLessons[lessonType][classNo] = []
         simplifiedTimeSlot = {"day":slot["day"], "startTime":int(slot["startTime"]), "endTime":int(slot["endTime"]), "location":slot["venue"]}
         intermediateGroupedLessons[lessonType][classNo].append(simplifiedTimeSlot)
     for lessonType in intermediateGroupedLessons.keys():
         listOfTime = []
         setListOfTime = {}
+        dupeClasses = []
         for classNo in intermediateGroupedLessons[lessonType].keys():
             groupedTimeSlots = []
             for timeSlot in intermediateGroupedLessons[lessonType][classNo]:
                 simplifiedFurther = (timeSlot["day"], timeSlot["startTime"], timeSlot["endTime"])
                 groupedTimeSlots.append(simplifiedFurther)
-            listOfTime.append(groupedTimeSlots)
+            for i in range(len(groupedTimeSlots)):
+                key = groupedTimeSlots[i]
+                j = i - 1
+                while( j >= 0 and (days.index(key[0]) < days.index(groupedTimeSlots[j][0]) or (key[0] == groupedTimeSlots[j][0] and key[1] < groupedTimeSlots[j][1]))):
+                    groupedTimeSlots[j+1] = groupedTimeSlots[j]
+                    j -= 1
+                groupedTimeSlots[j+1] = key
+            combinedString = ""
+            for timeSlot in groupedTimeSlots:
+                combinedString += f"{timeSlot[0]}{timeSlot[1]}{timeSlot[2]}"
+            listOfTime.append(combinedString)
             setListOfTime = set(listOfTime)
             if (len(setListOfTime) != len(listOfTime)):
                 listOfTime.pop()
-                del intermediateGroupedLessons[lessonType][classNo]
+                dupeClasses.append(classNo)
+        for dupeClass in dupeClasses:
+            del intermediateGroupedLessons[lessonType][dupeClass]
+                
     particularModData["potentialLessons"].append(intermediateGroupedLessons)
     modData.append(particularModData)
-with open("SolutionToTimeTables\\ModuleData.json", "w"):
-    json.dump(modData, "SolutionToTimeTables\\ModuleData.json", indent=4)
+with open("SolutionToTimeTables\\ModuleData.json", "w") as f:
+    json.dump(modData, f, indent=4)
 
 cppExecPath = "C:\\Users\\User\\repos\\TryingLearnCPP\\SolutionToTimeTables\\LogicOfTimetabling.exe"
 try:
