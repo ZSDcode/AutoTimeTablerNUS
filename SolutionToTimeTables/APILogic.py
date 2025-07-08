@@ -59,7 +59,7 @@ def inputMod(semesterNo):
     while True:
         modCode = input("Please key in a Module (Press b to remove the previous added mod): ").upper()
         try:
-            if (modCode == 'b'):
+            if (modCode == 'B'):
                 return modCode
             else:
                 response = requests.get(generate_APIURL(modCode))
@@ -87,7 +87,7 @@ def gettingModules(noMods):
             return
         else:
             modCode = inputMod(semNo)
-            if (modCode == 'b'):
+            if (modCode == 'B'):
                 if (count == 0):
                     count = count - 1
                 else:
@@ -107,23 +107,107 @@ noOfMods = gettingNoOfModules()
 modCodeList = gettingModules(noOfMods)
 modData = []
 
+def gettingNumberOfBlockPeriods():
+    while True:
+        try:
+            numberStr = input("How many block periods would you like to input: ")
+            if ('.' in numberStr):
+                print("Please input a non-negative integer")
+            else:
+                number = int(numberStr)
+                if (number < 0):
+                    print("Number inputted must be greated than or equal to 0")
+                else:
+                    return number
+        except ValueError as e:
+            print("Please input a non-negative integer")
+        except Exception as e:
+            print(f"An unexpected error has occured: {e}")
+
+def inputBlock():
+    weekdays = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+    block = {}
+    while True:
+        day = input("Enter the day of the blocked period (in ddd) format or b if you would like to undo the previous slot: ").lower()
+        if (day == 'b'):
+            return day
+        if (day not in weekdays):
+            print("Invalid day")
+        else:
+            block["day"] = day
+            break
+    while True:
+        try:
+            startTimeStr = input("Enter the starting time of your blocked period (in HHMM format): ")
+            if (len(startTimeStr) != 4):
+                print("Invalid Time")
+            else:
+                startTime = int(startTimeStr)
+                if (startTime < 0 or startTime > 2400):
+                    print("Invalid Time")
+                else:
+                    if (startTime % 100 >= 60):
+                        print("Invalid Time")
+                    else:
+                        block["startTime"] = startTime
+                        break
+        except ValueError as e:
+            print("Invalid Time")
+        except Exception as e:
+            print(f"An unexpected error occured: {e}")
+    while True:
+        try:
+            endTimeStr = input("Enter the ending time of your blocked period (in HHMM format): ")
+            if (len(endTimeStr) != 4):
+                print("Invalid Time")
+            else:
+                endTime = int(endTimeStr)
+                if (endTime < startTime or endTime > 2400):
+                    print("Invalid End Time")
+                else:
+                    if (endTime % 100 >= 60):
+                        print("Invalid Time")
+                    else:
+                        block["endTime"] = endTime
+                        return block
+        except ValueError as e:
+            print("Invalid Time")
+        except Exception as e:
+            print(f"An unexpected error occured: {e}")
+
+def gettingBlockPeriod(count):
+    blockPeriods = []
+    def pushPeriods(c):
+        if (c == count):
+            return
+        else:
+            block = inputBlock()
+            if (block != 'b'):
+                blockPeriods.append(block)
+                pushPeriods(c+1)
+            else:
+                if (len(blockPeriods) == 0):
+                    pushPeriods(c)
+                else:
+                    blockPeriods.pop()
+                    pushPeriods(c-1)
+    pushPeriods(0)
+    return blockPeriods
+
+blockPeriodNumber = gettingNumberOfBlockPeriods()
+blockPeriodList = gettingBlockPeriod(blockPeriodNumber)
+
 for mod in modCodeList:
     particularModData = {}
     response = requests.get(generate_APIURL(mod))
     data = response.json()
     particularModData["moduleCode"] = data["moduleCode"]
-    particularModData["MCs"] = data["moduleCredit"]
+    particularModData["MCs"] = int(data["moduleCredit"])
     semData = {}
     for semDict in data["semesterData"]:
         if (semDict["semester"] == semNo):
             semData = semDict
-    particularModData["examDate"] = semData["examDate"][0:10]
-    examISOStartTime = semData["examDate"][11:-1]
-    examSGTStartTime = (int(examISOStartTime[0:2] + examISOStartTime[3:5]) + 800) % 2400
-    examSGTEndTime = int(examSGTStartTime + semData["examDuration"]/60 * 100)
-    particularModData["examStartTime"] = examSGTStartTime
-    particularModData["examEndTime"] = examSGTEndTime
-    particularModData["potentialLessons"] = []
+    particularModData["potentialLessons"] = {}
     intermediateGroupedLessons = {}
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     for slot in semData["timetable"]:
@@ -162,10 +246,12 @@ for mod in modCodeList:
         for dupeClass in dupeClasses:
             if (intermediateGroupedLessons[lessonType][dupeClass][0]["location"] != "E-Learn_C"):
                 del intermediateGroupedLessons[lessonType][dupeClass]
-    particularModData["potentialLessons"].append(intermediateGroupedLessons)
+    particularModData["potentialLessons"] = intermediateGroupedLessons
     modData.append(particularModData)
 with open("SolutionToTimeTables\\ModuleData.json", "w") as f:
     json.dump(modData, f, indent=4)
+with open("SolutionToTimeTables\\BlockPeriodFromUser.json", "w") as f:
+    json.dump(blockPeriodList, f, indent=4)
 
 cppExecPath = "C:\\Users\\User\\repos\\TryingLearnCPP\\SolutionToTimeTables\\LogicOfTimetabling.exe"
 try:
