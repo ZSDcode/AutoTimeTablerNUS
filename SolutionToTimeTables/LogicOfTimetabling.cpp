@@ -486,21 +486,9 @@ int main(int argc, char* argv[]) {
     try {
         vector<TimeTable> allPossible = allValid(semesterModules, blocked);
         vector<double> scores{};
-        for (size_t i{0}; i < allPossible.size(); i++) {
-            scores.push_back(score(allPossible[i], mult));
-        }
-        for (int i{0}; i < scores.size(); i++) {
-            double scoreKey = scores[i];
-            TimeTable timetableKey = allPossible[i];
-            int j = i - 1;
-            while (j >= 0 and scoreKey < scores[j]) {
-                scores[j+1] = scores[j];
-                allPossible[j+1] = allPossible[j];
-                j -= 1;
-            }
-            scores[j] = scoreKey;
-            allPossible[j] = timetableKey;
-        }
+        sort(allPossible.begin(), allPossible.end(), [&](TimeTable& a, TimeTable& b) {
+            return score(a, mult) < score(b, mult);
+        });
         printTimetables(allPossible, mult.at("noOfTimetables").get<int>());
     } catch (const exception& e) {
         cerr << "Unexpected Error: " << e.what();
