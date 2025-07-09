@@ -1,41 +1,5 @@
 [
     {
-        "moduleCode": "MA1522",
-        "MCs": 4,
-        "potentialLessons": {
-            "Lecture": {
-                "1": [
-                    {
-                        "day": "Monday",
-                        "startTime": 800,
-                        "endTime": 1000,
-                        "location": "LT11"
-                    },
-                    {
-                        "day": "Thursday",
-                        "startTime": 1600,
-                        "endTime": 1800,
-                        "location": "LT11"
-                    }
-                ],
-                "2": [
-                    {
-                        "day": "Wednesday",
-                        "startTime": 800,
-                        "endTime": 1000,
-                        "location": "LT11"
-                    },
-                    {
-                        "day": "Friday",
-                        "startTime": 1600,
-                        "endTime": 1800,
-                        "location": "LT11"
-                    }
-                ]
-            }
-        }
-    },
-    {
         "moduleCode": "CS1101S",
         "MCs": 4,
         "potentialLessons": {

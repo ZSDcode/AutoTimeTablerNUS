@@ -2,6 +2,7 @@ import requests
 import json
 import subprocess
 import datetime
+import os
 
 def defaultValueErrorString(a, b):
     return f"Please enter an integer between {a} and {b}"
@@ -143,7 +144,7 @@ def inputBlock():
                 print("Invalid Time")
             else:
                 startTime = int(startTimeStr)
-                if (startTime < 0 or startTime > 2400):
+                if (startTime < 0 or startTime > 2359):
                     print("Invalid Time")
                 else:
                     if (startTime % 100 >= 60):
@@ -162,7 +163,7 @@ def inputBlock():
                 print("Invalid Time")
             else:
                 endTime = int(endTimeStr)
-                if (endTime < startTime or endTime > 2400):
+                if (endTime < startTime or endTime > 2359):
                     print("Invalid End Time")
                 else:
                     if (endTime % 100 >= 60):
@@ -196,6 +197,69 @@ def gettingBlockPeriod(count):
 
 blockPeriodNumber = gettingNumberOfBlockPeriods()
 blockPeriodList = gettingBlockPeriod(blockPeriodNumber)
+
+def getMult():
+    print("Right now, you'll be inputting multiple values on the scale of 1 to 10 (of course you can weight higher or even negative up to preference). " \
+    "\n This is to evaluate your possible timetables to find your best one posible")
+    multipliers = {}
+    while True:
+        try:
+            freeDayMultStr = input("Please input how heavily you want to weigh Free Days: ")
+            freeDayMult = int(freeDayMultStr)
+            multipliers["freeDayMult"] = freeDayMult
+            break
+        except ValueError as e:
+            print("Please enter a number from 0 - 10")
+    while True:
+        try:
+            startTimeMultStr = input("Please input how heavily you want to weigh start time (later the better): ")
+            startTimeMult = int(startTimeMultStr)
+            multipliers["startTimeMult"] = startTimeMult
+            break
+        except ValueError as e:
+            print("Please enter a number from 0 - 10")
+    while True:
+        try:
+            endTimeMultStr = input("Please input how heavily you want to weigh end time (earlier the better): ")
+            endTimeMult = int(endTimeMultStr)
+            multipliers["endTimeMult"] = endTimeMult
+            break
+        except ValueError as e:
+            print("Please enter a number from 0 - 10")
+    while True:
+        try:
+            multipliers["gapTimeMult"] = []
+            optGapTimeStr = input("Please put the optimal gap time you wish to have per day, in hours: ")
+            optimalGapTime = int(optGapTimeStr)
+            if (optimalGapTime < 0):
+                print("Please input a non-negative number")
+            else:
+                multipliers["gapTimeMult"].append(optimalGapTime)
+                break
+        except ValueError as e:
+            print("Please input a non-negative number")
+    while True:
+        try:
+            gapTimeMultStr = input("Please input how heavily you want to weigh gap time (closer to you optimal, the better): ")
+            gapTimeMult = int(gapTimeMultStr)
+            multipliers["gapTimeMult"].append(gapTimeMult)
+            break
+        except ValueError as e:
+            print("Please enter a number from 0 - 10")
+    while True:
+        try:
+            noOfTimetablesStr = input("How many Timetables would you like to print: ")
+            if ('.' in noOfTimetablesStr):
+                print("Please enter a positive integer")
+            else:
+                noOfTimetables = int(noOfTimetablesStr)
+                multipliers["noOfTimetables"] = noOfTimetables
+                break
+        except ValueError as e:
+            print("Please enter a positive integer")
+    return multipliers 
+
+multipliers = getMult()
 
 for mod in modCodeList:
     particularModData = {}
@@ -248,14 +312,21 @@ for mod in modCodeList:
                 del intermediateGroupedLessons[lessonType][dupeClass]
     particularModData["potentialLessons"] = intermediateGroupedLessons
     modData.append(particularModData)
-with open("SolutionToTimeTables\\ModuleData.json", "w") as f:
-    json.dump(modData, f, indent=4)
-with open("SolutionToTimeTables\\BlockPeriodFromUser.json", "w") as f:
-    json.dump(blockPeriodList, f, indent=4)
+baseDir = os.path.dirname(os.path.abspath(__file__))
+exePath = os.path.join(baseDir, "LogicOfTimetabling.exe")
+moduleJsonPath = os.path.join(baseDir, "ModuleData.json")
+blockPeriodPath = os.path.join(baseDir, "BlockPeriodFromUser.json")
+multipliersPath = os.path.join(baseDir, "Multipliers.json")
 
-cppExecPath = "C:\\Users\\User\\repos\\TryingLearnCPP\\SolutionToTimeTables\\LogicOfTimetabling.exe"
+with open(moduleJsonPath, "w") as f:
+    json.dump(modData, f, indent=4)
+with open(blockPeriodPath, "w") as f:
+    json.dump(blockPeriodList, f, indent=4)
+with open(multipliersPath, "w") as f:
+    json.dump(multipliers, f, indent=4)
+
 try:
-    result = subprocess.run([cppExecPath], capture_output=True, text=True, check=True)
+    result = subprocess.run([exePath], capture_output=True, text=True, check=True)
     print("C++ program Output: ")
     print(result.stdout)
 except subprocess.CalledProcessError as e:

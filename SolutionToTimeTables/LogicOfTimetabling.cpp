@@ -11,6 +11,8 @@
 #include <stdexcept> // For std::runtime_error
 #include <optional>  // Still useful for other optional types if needed later, but not for Module exams
 #include <functional> // For std::function
+#include <filesystem>
+#include <algorithm>
 using namespace std;
 
 enum class WeekDay {MON, TUE, WED, THU, FRI, SAT, SUN};
@@ -216,7 +218,7 @@ vector<TimeTable> allValid(vector<Module> semester, vector<TimeSlot> blockedPeri
     return s;
 }
 
-void printTimetable(const TimeTable& curr) {
+vector<vector<ChosenModuleSlot>> sortDaysOnTime(TimeTable& curr) {
     vector<ChosenModuleSlot> mon, tue, wed, thu, fri, sat, sun;
     for (size_t i{0}; i < curr.size(); i++) {
         for (size_t j{0}; j < curr[i].slot.size(); j++) {
@@ -246,7 +248,6 @@ void printTimetable(const TimeTable& curr) {
         }
     }
     vector<vector<ChosenModuleSlot>> week = {mon, tue, wed, thu, fri, sat, sun};
-    vector<string> weekDayNames = {"MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"};
     for (int i{0}; i < week.size(); i++) {
         for (size_t j{0}; j < week[i].size(); j++) {
             ChosenModuleSlot key{week[i][j]};
@@ -258,11 +259,17 @@ void printTimetable(const TimeTable& curr) {
             week[i][k+1] = key;
         }
     }
+    return week;
+}
+
+void printTimetable(TimeTable& curr) {
+    vector<vector<ChosenModuleSlot>> week = sortDaysOnTime(curr);
     function<void(vector<ChosenModuleSlot>&)> printDay = [](const vector<ChosenModuleSlot>& chosenDay) -> void {
         for (size_t i{0}; i < chosenDay.size(); i++) {
             chosenDay[i].printModule();
         }
     };
+    vector<string> weekDayNames = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
     for (int i{0}; i < week.size(); i++) {
         if (!week[i].empty()) {
             cout << weekDayNames[i] + ": \n";
@@ -272,7 +279,7 @@ void printTimetable(const TimeTable& curr) {
     }
 }
 
-void printTimetables(const vector<TimeTable>& all, int noOfOutputTimeTables) {
+void printTimetables(vector<TimeTable>& all, int noOfOutputTimeTables) {
     if (!all.empty()) {
         if (noOfOutputTimeTables < all.size()) {
             for (int i = 0; i < noOfOutputTimeTables; i++) {
@@ -295,67 +302,140 @@ void printTimetables(const vector<TimeTable>& all, int noOfOutputTimeTables) {
     }
 }
 
-int score(TimeTable curr, map<string, int> multipliers) {
-    vector<ChosenModuleSlot> mon, tue, wed, thu, fri, sat, sun;
-    for (size_t i{0}; i < curr.size(); i++) {
-        for (size_t j{0}; j < curr[i].slot.size(); j++) {
-            switch (curr[i].slot[j].day) {
-                case WeekDay::MON:
-                    mon.push_back(ChosenModuleSlot(curr[i].modCode, curr[i].lesson, {curr[i].slot[j]}));
-                    break;
-                case WeekDay::TUE:
-                    tue.push_back(ChosenModuleSlot(curr[i].modCode, curr[i].lesson, {curr[i].slot[j]}));
-                    break;
-                case WeekDay::WED:
-                    wed.push_back(ChosenModuleSlot(curr[i].modCode, curr[i].lesson, {curr[i].slot[j]}));
-                    break;
-                case WeekDay::THU:
-                    thu.push_back(ChosenModuleSlot(curr[i].modCode, curr[i].lesson, {curr[i].slot[j]}));
-                    break;
-                case WeekDay::FRI:
-                    fri.push_back(ChosenModuleSlot(curr[i].modCode, curr[i].lesson, {curr[i].slot[j]}));
-                    break;
-                case WeekDay::SAT:
-                    sat.push_back(ChosenModuleSlot(curr[i].modCode, curr[i].lesson, {curr[i].slot[j]}));
-                    break;
-                case WeekDay::SUN:
-                    sun.push_back(ChosenModuleSlot(curr[i].modCode, curr[i].lesson, {curr[i].slot[j]}));
-                    break;
-            }
-        }
-    }
-    vector<vector<ChosenModuleSlot>> week = {mon, tue, wed, thu, fri, sat, sun};
-    auto freeDaysEvaluate = [week](int e) -> int {
+using json = nlohmann::json;
+
+int score(TimeTable& curr, json multipliers) {
+    vector<vector<ChosenModuleSlot>> week = sortDaysOnTime(curr);
+    auto freeDaysCounter = [&week]() -> int {
         int count = 0;
         for (int i{0}; i < week.size(); i++) {
             if (week[i].empty()) {
                 count += 1;
             } else {
-                if (e == 0) {
-                    bool elearn = true;
-                    for (size_t j{0}; j < week[i].size(); j++) {
-                        if (week[i][j].slot[0].location == "E-Learn_C") {
-                            elearn = false;
-                            break;
-                        }
+                bool elearn = true;
+                for (size_t j{0}; j < week[i].size(); j++) {
+                    if (week[i][j].slot[0].location != "E-Learn_C") {
+                        elearn = false;
+                        break;
                     }
-                    if (elearn) {
-                        count += 1;
-                    }
+                }
+                if (elearn) {
+                    count += 1;
                 }
             }
         }
         return count;
     };
-    
-    
-    return freeDaysEvaluate(0);
+
+    function<int(int, int)> startTimeIterator;
+    startTimeIterator = [&](int i, int idx) -> int {
+        if (idx == week[i].size()) {
+            return 0;
+        } else {
+            if (week[i][idx].slot[0].location == "E-Learn_C") {
+                return startTimeIterator(i, idx + 1);
+            }
+            else {
+                return week[i][idx].slot[0].startTime;
+            }
+        }
+    };
+
+    function<vector<double>(void)> startTimeVect;
+    startTimeVect = [&]() -> vector<double> {
+        vector<double> startTimes{};
+        for (size_t i{0}; i < week.size(); i++) {
+            if (week[i].empty()) {
+                startTimes.push_back(0);
+            } else {
+                int startingTime = startTimeIterator(i, 0);
+                startTimes.push_back(floor(startingTime/100) + static_cast<double>(startingTime%100)/60);
+            }
+        }
+        return startTimes;
+    };
+
+        function<int(int, int)> endTimeIterator;
+        endTimeIterator = [&](int i, int idx) -> int {
+        if (idx < 0) {
+            return 0;
+        } else {
+            if (week[i][idx].slot[0].location == "E-Learn_C") {
+                return endTimeIterator(i, idx - 1);
+            }
+            else {
+                return week[i][idx].slot[0].endTime;
+            }
+        }
+    };
+
+    function<vector<double>(void)> endTimeVect;
+    endTimeVect = [&]() -> vector<double> {
+        vector<double> endTimes{};
+        for (size_t i{0}; i < week.size(); i++) {
+            if (week[i].empty()) {
+                endTimes.push_back(0);
+            } else {
+                int endingTime = endTimeIterator(i, week[i].size()-1);
+                endTimes.push_back(floor(endingTime/100) + static_cast<double>(endingTime%100)/60);
+            }
+        }
+        return endTimes;
+    };
+
+    function<vector<double>(void)> gapTimeVect;
+    gapTimeVect = [&week]() -> vector<double> {
+        vector<double> gapTimes{};
+        for (size_t i{0}; i < week.size(); i++) {
+            int gapSum{0};
+            vector<TimeSlot> inPersonClasses{};
+            if (!week[i].empty()) {
+                for (size_t j{0}; j < week[i].size(); j++) {
+                    if (week[i][j].slot[0].location != "E-Learn_C") {
+                        inPersonClasses.push_back(week[i][j].slot[0]);
+                    }
+                }
+            } else {
+                gapTimes.push_back(0);
+            }
+            if (inPersonClasses.size() <= 1) {
+                gapTimes.push_back(0);
+            }
+            else {
+                for (size_t j{0}; j < inPersonClasses.size()-1; j++) {
+                    int k = j + 1;
+                    int gapInt{inPersonClasses[k].startTime - inPersonClasses[j].endTime};
+                    double gap{floor(gapInt/100) + static_cast<double>(gapInt%100)/60};
+                    gapSum += gap;
+                }
+                gapTimes.push_back(gapSum);
+            }
+        }
+        return gapTimes;
+    };
+
+    double score{0};
+    int freeDays = freeDaysCounter();
+    vector<double> startTimes = startTimeVect();
+    vector<double> endTimes = endTimeVect();
+    vector<double> gapTimes = gapTimeVect();
+    score -= freeDays * 4 * multipliers.at("freeDayMult").get<double>();
+    for (size_t i{0}; i < startTimes.size(); i++) {
+        score += (24 - startTimes[i])/8 * multipliers.at("startTimeMult").get<double>();
+        score += (endTimes[i])/8 * multipliers.at("endTimeMult").get<double>();
+        score += abs(gapTimes[i] - multipliers["gapTimeMult"][0].get<double>())/4 * multipliers["gapTimeMult"][1].get<double>();
+    }
+    return score;
 }
 
-using json = nlohmann::json;
+namespace fs = std::filesystem;
 
-int main() {
-    ifstream jsonFile("C:\\Users\\User\\repos\\TryingLearnCPP\\SolutionToTimeTables\\ModuleData.json");
+int main(int argc, char* argv[]) {
+    fs::path basePath = fs::path(argv[0]).parent_path();
+    fs::path jsonFilePath = basePath / "ModuleData.json";
+    fs::path jsonBlockedFilePath = basePath / "BlockPeriodFromUser.json";
+    fs::path jsonMultipliersPath = basePath / "Multipliers.json";
+    ifstream jsonFile(jsonFilePath);
     json moduleData;
     jsonFile >> moduleData;
     jsonFile.close();
@@ -381,10 +461,14 @@ int main() {
         semesterModules.push_back(Module(modCode, moduleCreds, modReq));
     }
     vector<TimeSlot> blocked{};
-    ifstream jsonBlockedFile("C:\\Users\\User\\repos\\TryingLearnCPP\\SolutionToTimeTables\\BlockPeriodFromUser.json");
+    ifstream jsonBlockedFile(jsonBlockedFilePath);
     json blockedData;
     jsonBlockedFile >> blockedData;
     jsonBlockedFile.close();
+    ifstream jsonMult(jsonMultipliersPath);
+    json mult;
+    jsonMult >> mult;
+    jsonMult.close();
     if (blockedData.size() != 0) {
         map<string, string> mappingForBlock = {
             {"mon", "Monday"},
@@ -401,7 +485,23 @@ int main() {
     }
     try {
         vector<TimeTable> allPossible = allValid(semesterModules, blocked);
-        printTimetables(allPossible, 3);
+        vector<double> scores{};
+        for (size_t i{0}; i < allPossible.size(); i++) {
+            scores.push_back(score(allPossible[i], mult));
+        }
+        for (int i{0}; i < scores.size(); i++) {
+            double scoreKey = scores[i];
+            TimeTable timetableKey = allPossible[i];
+            int j = i - 1;
+            while (j >= 0 and scoreKey < scores[j]) {
+                scores[j+1] = scores[j];
+                allPossible[j+1] = allPossible[j];
+                j -= 1;
+            }
+            scores[j] = scoreKey;
+            allPossible[j] = timetableKey;
+        }
+        printTimetables(allPossible, mult.at("noOfTimetables").get<int>());
     } catch (const exception& e) {
         cerr << "Unexpected Error: " << e.what();
     }
