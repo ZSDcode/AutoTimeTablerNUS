@@ -18,6 +18,8 @@ Current Progress:
 Coded the backend logic for C++ to iterate through timetables
 Error handling of inputs
 Parsing Data Settled
+C++ to read json file and add into structs
+Score function implemented
 
 Next Step:
-C++ to read json file and add into structs such that I can use timetable iteration
+Add location based planning
