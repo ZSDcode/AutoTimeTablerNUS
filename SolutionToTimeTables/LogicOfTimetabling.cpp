@@ -341,15 +341,15 @@ int score(TimeTable& curr, json multipliers) {
         }
     };
 
-    function<vector<double>(void)> startTimeVect;
-    startTimeVect = [&]() -> vector<double> {
-        vector<double> startTimes{};
+    function<vector<float>(void)> startTimeVect;
+    startTimeVect = [&]() -> vector<float> {
+        vector<float> startTimes{};
         for (size_t i{0}; i < week.size(); i++) {
             if (week[i].empty()) {
                 startTimes.push_back(0);
             } else {
                 int startingTime = startTimeIterator(i, 0);
-                startTimes.push_back(floor(startingTime/100) + static_cast<double>(startingTime%100)/60);
+                startTimes.push_back(floor(startingTime/100) + static_cast<float>(startingTime%100)/60);
             }
         }
         return startTimes;
@@ -369,23 +369,23 @@ int score(TimeTable& curr, json multipliers) {
         }
     };
 
-    function<vector<double>(void)> endTimeVect;
-    endTimeVect = [&]() -> vector<double> {
-        vector<double> endTimes{};
+    function<vector<float>(void)> endTimeVect;
+    endTimeVect = [&]() -> vector<float> {
+        vector<float> endTimes{};
         for (size_t i{0}; i < week.size(); i++) {
             if (week[i].empty()) {
                 endTimes.push_back(0);
             } else {
                 int endingTime = endTimeIterator(i, week[i].size()-1);
-                endTimes.push_back(floor(endingTime/100) + static_cast<double>(endingTime%100)/60);
+                endTimes.push_back(floor(endingTime/100) + static_cast<float>(endingTime%100)/60);
             }
         }
         return endTimes;
     };
 
-    function<vector<double>(void)> gapTimeVect;
-    gapTimeVect = [&week]() -> vector<double> {
-        vector<double> gapTimes{};
+    function<vector<float>(void)> gapTimeVect;
+    gapTimeVect = [&week]() -> vector<float> {
+        vector<float> gapTimes{};
         for (size_t i{0}; i < week.size(); i++) {
             int gapSum{0};
             vector<TimeSlot> inPersonClasses{};
@@ -405,7 +405,7 @@ int score(TimeTable& curr, json multipliers) {
                 for (size_t j{0}; j < inPersonClasses.size()-1; j++) {
                     int k = j + 1;
                     int gapInt{inPersonClasses[k].startTime - inPersonClasses[j].endTime};
-                    double gap{floor(gapInt/100) + static_cast<double>(gapInt%100)/60};
+                    float gap = static_cast<float>(floor(gapInt / 100)) + static_cast<float>(gapInt % 100) / 60.0f;
                     gapSum += gap;
                 }
                 gapTimes.push_back(gapSum);
@@ -414,16 +414,16 @@ int score(TimeTable& curr, json multipliers) {
         return gapTimes;
     };
 
-    double score{0};
+    float score{0};
     int freeDays = freeDaysCounter();
-    vector<double> startTimes = startTimeVect();
-    vector<double> endTimes = endTimeVect();
-    vector<double> gapTimes = gapTimeVect();
-    score -= freeDays * 4 * multipliers.at("freeDayMult").get<double>();
+    vector<float> startTimes = startTimeVect();
+    vector<float> endTimes = endTimeVect();
+    vector<float> gapTimes = gapTimeVect();
+    score -= freeDays * 4 * multipliers.at("freeDayMult").get<float>();
     for (size_t i{0}; i < startTimes.size(); i++) {
-        score += (24 - startTimes[i])/8 * multipliers.at("startTimeMult").get<double>();
-        score += (endTimes[i])/8 * multipliers.at("endTimeMult").get<double>();
-        score += abs(gapTimes[i] - multipliers["gapTimeMult"][0].get<double>())/4 * multipliers["gapTimeMult"][1].get<double>();
+        score += (24 - startTimes[i])/8 * multipliers.at("startTimeMult").get<float>();
+        score += (endTimes[i])/8 * multipliers.at("endTimeMult").get<float>();
+        score += abs(gapTimes[i] - multipliers["gapTimeMult"][0].get<float>())/4 * multipliers["gapTimeMult"][1].get<float>();
     }
     return score;
 }

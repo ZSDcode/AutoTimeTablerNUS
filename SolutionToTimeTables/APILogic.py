@@ -205,7 +205,7 @@ def getMult():
     while True:
         try:
             freeDayMultStr = input("Please input how heavily you want to weigh Free Days: ")
-            freeDayMult = int(freeDayMultStr)
+            freeDayMult = float(freeDayMultStr)
             multipliers["freeDayMult"] = freeDayMult
             break
         except ValueError as e:
@@ -213,7 +213,7 @@ def getMult():
     while True:
         try:
             startTimeMultStr = input("Please input how heavily you want to weigh start time (later the better): ")
-            startTimeMult = int(startTimeMultStr)
+            startTimeMult = float(startTimeMultStr)
             multipliers["startTimeMult"] = startTimeMult
             break
         except ValueError as e:
@@ -221,7 +221,7 @@ def getMult():
     while True:
         try:
             endTimeMultStr = input("Please input how heavily you want to weigh end time (earlier the better): ")
-            endTimeMult = int(endTimeMultStr)
+            endTimeMult = float(endTimeMultStr)
             multipliers["endTimeMult"] = endTimeMult
             break
         except ValueError as e:
@@ -230,7 +230,7 @@ def getMult():
         try:
             multipliers["gapTimeMult"] = []
             optGapTimeStr = input("Please put the optimal gap time you wish to have per day, in hours: ")
-            optimalGapTime = int(optGapTimeStr)
+            optimalGapTime = float(optGapTimeStr)
             if (optimalGapTime < 0):
                 print("Please input a non-negative number")
             else:
@@ -241,7 +241,7 @@ def getMult():
     while True:
         try:
             gapTimeMultStr = input("Please input how heavily you want to weigh gap time (closer to you optimal, the better): ")
-            gapTimeMult = int(gapTimeMultStr)
+            gapTimeMult = float(gapTimeMultStr)
             multipliers["gapTimeMult"].append(gapTimeMult)
             break
         except ValueError as e:

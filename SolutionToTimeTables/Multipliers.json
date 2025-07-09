@@ -1,10 +1,10 @@
 {
-    "freeDayMult": 0,
-    "startTimeMult": 0,
-    "endTimeMult": 0,
+    "freeDayMult": 1.2,
+    "startTimeMult": 1.4,
+    "endTimeMult": 1.6,
     "gapTimeMult": [
-        0,
-        0
+        2.0,
+        1.0
     ],
-    "noOfTimetables": 1
+    "noOfTimetables": 3
 }
