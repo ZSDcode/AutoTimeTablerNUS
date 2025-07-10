@@ -304,7 +304,272 @@ void printTimetables(vector<TimeTable>& all, int noOfOutputTimeTables) {
 
 using json = nlohmann::json;
 
-int score(TimeTable& curr, json multipliers) {
+string locParse(const string& location) {
+    string u = "Unknown Loc";
+    if (location[0] == 'A') {
+        if (location.substr(0, 2) == "AS") {
+            return location.substr(0, 3);
+        }
+        else {
+            return u;
+        }
+    }
+    else if (location[0] == 'B') {
+        if (location.substr(0, 3) == "BIZ") {
+            return location.substr(0, 4);
+        }
+        else {
+            return u;
+        }
+    }
+    else if (location[0] == 'C') {
+        if (location.substr(0, 4) == "CAPT") {
+            return "RC";
+        } else if (location.substr(0, 4) == "CELC") {
+            return "CELC";
+        } else if (location.substr(0, 4) == "CELS") {
+            return "CELS";
+        } else if (location.substr(0, 3) == "COM") {
+            return location.substr(0, 4);
+        } else if (location.substr(0, 3) == "CQT") {
+            return "S15";
+        } else {
+            return u;
+        }
+    }
+    else if (location[0] == 'E') {
+        if (location.substr(0, 3) == "ERC") {
+            return "ERC";
+        } else if (location.substr(0, 2) == "EW") {
+            if (location[2] == '1') {
+                return "EW1";
+            } else {
+                return "E8";
+            }
+        } else if (location.substr(0, 2) == "EA" or location == "ENG-AUD") {
+            return "EA";
+        } else if (location.substr(0, 2) == "EC") {
+            return "EC";
+        } else if (isdigit(location[1])) {
+            if (location[2] == 'A') {
+                return location.substr(0, 3);
+            } else {
+                return location.substr(0, 2);
+            }
+        } else {
+            return u;
+        }
+    }
+    else if (location.substr(0, 3) == "FED") {
+        return "LAW";
+    }
+    else if (location[0] == 'F') {
+        return "Frontier";
+    }
+    else if (location.substr(0, 3) == "HSS") {
+        return "HSS";
+    }
+    else if (location[0] == 'I') {
+        if (location.substr(0, 2) == "I3" || location == "Interaction") {
+            return "I3";
+        } else if (location.substr(0, 2) == "I4") {
+            return "I4";
+        } else {
+            return u;
+        }
+    }
+    else if (location.substr(0, 3) == "LAW" || location.substr(0, 3) == "LKY") {
+        return "LAW";
+    }
+    else if (location.substr(0, 2) == "LT") {
+        if (location.length() == 3) {
+            return location;
+        } else if (location == "LT7A") {
+            return "EA";
+        } else if (location.length() >= 4) {
+            return location.substr(0, 4);
+        }
+    } else if (location.substr(0, 2) == "MD") {
+        if (isdigit(location[3])) {
+            return location.substr(0, 4);
+        } else if (location.substr(0, 4) == "MD4A") {
+            return "MD4A";
+        } else {
+            return location.substr(0, 3);
+        }
+    } else if (location == "NAK-AUD") {
+        return "ERC";
+    } else if (location.substr(0, 2) == "RC") {
+        return location.substr(0, 3);
+    } else if (location.substr(0, 3) == "RVR") {
+        return location.substr(0, 3);
+    } else if (location.substr(0, 3) == "RMI") {
+        return "I3";
+    } else if (location[0] == 'S') {
+        if (isdigit(location[1])) {
+            if (isalpha(location[2]) or isdigit(location[2])) {
+                return location.substr(0, 3);
+            } else {
+                return location.substr(0, 2);
+            }
+        } else if (location.substr(0, 3) == "SDE") {
+            if (!isdigit(location[3])) {
+                return "SDE2";
+            } else {
+                return location.substr(0, 4);
+            }
+        } else if (location == "SR_LT19") {
+            return "COM2";
+        } else if (location == "SPSWETLAB") {
+            return "S16";
+        }
+    } else if (location.substr(0, 2) == "TC") {
+        return "RC";
+    } else if (location.substr(0, 2) == "TP") {
+        return "UT";
+    } else if (location[0] == 'U') {
+        if (location == "UTSRC-SR4") {
+            return "ERC";
+        } else if (location == "UT-AUD3") {
+            return "RC";
+        } else {
+            return "UT";
+        }
+    } else if (location[0] == 'Y') {
+        return "YST";
+    }
+    return u;
+}
+
+static const map<string, vector<string>> closestBuildings = {
+    {"AS1", {"AS2", "AS3", "LT9"}},
+    {"AS2", {"LT11", "LT12", "LT13", "AS1", "AS3"}},
+    {"AS3", {"LT12", "LT13", "AS1", "AS2", "AS4"}},
+    {"AS4", {"AS3", "AS5"}},
+    {"AS5", {"LT8", "AS4"}},
+    {"AS6", {"LT14", "LT15"}},
+    {"AS8", {"AS6", "AS1"}},
+    {"BIZ1", {"HSS"}},
+    {"CELC", {"SDE2"}},
+    {"CELS", {"S6", "MD2"}},
+    {"COM1", {"COM2", "COM3"}},
+    {"COM2", {"COM1", "COM3", "LT16", "LT17", "LT18", "LT19", "HSS"}},
+    {"COM3", {"COM1", "COM2", "COM4"}},
+    {"COM4", {"COM3", "I4"}},
+    {"BIZ2", {"LT19", "LT18", "I3"}},
+    {"E1", {"E1A", "EW1", "E2"}},
+    {"E1A", {"E1", "EA", "E2"}},
+    {"E2", {"E1A", "E1", "LT1", "LT2"}},
+    {"E3", {"LT7", "E4"}},
+    {"E3A", {"EA"}},
+    {"E4", {"E1", "LT6", "E4A", "E5", "E3"}},
+    {"E4A", {"E4"}},
+    {"E5", {"E4"}},
+    {"E5A", {"E3"}},
+    {"E6", {"E7"}},
+    {"E7", {"E6"}},
+    {"EA", {"LT7", "E2", "E1A", "E3A"}},
+    {"ERC", {"RC"}},
+    {"Frontier", {"S10", "S16", "LT26", "MD9", "MD7"}},
+    {"HSS", {"COM2", "LT18"}},
+    {"I3", {"BIZ2"}},
+    {"I4", {"COM4"}},
+    {"LT1", {"E2", "LT2", "E3", "LT7"}},
+    {"LT2", {"LT1", "E2"}},
+    {"LT3", {"LT4"}},
+    {"LT4", {"LT3"}},
+    {"LT6", {"E4"}},
+    {"LT7", {"EA", "LT1"}},
+    {"LT8", {"AS5"}},
+    {"LT9", {"AS1", "AS4", "LT10"}},
+    {"LT10", {"AS1", "AS4", "LT9"}},
+    {"LT11", {"AS2"}},
+    {"LT12", {"AS3", "AS2", "LT13"}},
+    {"LT13", {"AS3", "AS2", "LT12"}},
+    {"LT14", {"AS6", "LT15"}},
+    {"LT15", {"AS6", "LT14"}},
+    {"LT16", {"COM2"}},
+    {"LT17", {"COM2"}},
+    {"LT18", {"BIZ2"}},
+    {"LT19", {"COM2", "BIZ2"}},
+    {"LT20", {"S3"}},
+    {"LT21", {"S5"}},
+    {"LT26", {"Frontier", "MD9", "MD7"}},
+    {"LT27", {"LT28", "LT29", "S16", "Frontier", "LT31"}},
+    {"LT28", {"LT27", "LT29", "S16", "Frontier", "LT31"}},
+    {"LT29", {"LT27", "LT28", "S16", "Frontier", "LT31"}},
+    {"LT31", {"S16", "S15", "S14", "Frontier", "LT27", "LT28", "LT29"}},
+    {"LT32", {"S1", "S3", "S1A"}},
+    {"LT33", {"S17", "LT34"}},
+    {"LT34", {"S17", "LT33"}},
+    {"MD1", {"MD4", "MD3", "S5"}},
+    {"MD2", {"MD3"}},
+    {"MD3", {"MD2", "MD1", "MD4", "MD4A", "MD5"}},
+    {"MD4", {"MD4A", "MD5", "MD7"}},
+    {"MD4A", {"MD4", "MD5", "MD3", "MD1"}},
+    {"MD5", {"MD4", "MD4A", "MD7", "MD3", "MD6"}},
+    {"MD6", {"MD5", "MD11"}},
+    {"MD7", {"MD5", "MD4", "LT26"}},
+    {"MD9", {"LT26", "LT27", "LT28", "LT29", "Frontier", "MD10"}},
+    {"MD10", {"MD9", "MD11"}},
+    {"MD11", {"MD6", "MD10"}},
+    {"RC", {"TC"}},
+    {"S1", {"S1A", "LT32", "S2"}},
+    {"S1A", {"S1", "S3"}},
+    {"S2", {"S1", "S3"}},
+    {"S3", {"S2", "S4", "LT20"}},
+    {"S4", {"S4A", "S3", "S5", "LT21"}},
+    {"S5", {"S4", "S6", "S10", "LT21"}},
+    {"S6", {"S5", "CELS"}},
+    {"S7", {"S8", "S11"}},
+    {"S8", {"S7", "S10"}},
+    {"S10", {"S8", "Frontier"}},
+    {"S11", {"S7", "S12"}},
+    {"S12", {"S11", "S13"}},
+    {"S13", {"S12", "S14"}},
+    {"S14", {"S13", "S15"}},
+    {"S15", {"S14", "S16", "S17"}},
+    {"S16", {"S15", "S14", "Frontier"}},
+    {"S17", {"LT34", "S15"}},
+    {"SDE1", {"SDE2", "SDE3", "SDE4", "EW1"}},
+    {"SDE2", {"CELC", "SDE1"}},
+    {"SDE3", {"SDE4", "SDE1"}},
+    {"SDE4", {"SDE1", "SDE3"}},
+    {"TC", {"RC"}},
+};
+
+bool checkClose(const string& loc1, const string& loc2) {
+    if (loc1 == loc2) {
+        return true;
+    } else {
+        bool close = false;
+        if (closestBuildings.count(loc1)){
+            if (!closestBuildings.at(loc1).empty()) {
+                for (size_t j{0}; j < closestBuildings.at(loc1).size(); j++) {
+                    if (loc2 == closestBuildings.at(loc1)[j]) {
+                        close = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (!close) {
+            if (closestBuildings.count(loc2)) {
+                if (!closestBuildings.at(loc2).empty()){
+                    for (size_t j{0}; j < closestBuildings.at(loc2).size(); j++) {
+                        if (loc1 == closestBuildings.at(loc2)[j]) {
+                            close = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return close;
+    }
+}
+
+int score(TimeTable& curr, json& multipliers) {
     vector<vector<ChosenModuleSlot>> week = sortDaysOnTime(curr);
     auto freeDaysCounter = [&week]() -> int {
         int count = 0;
@@ -327,67 +592,64 @@ int score(TimeTable& curr, json multipliers) {
         return count;
     };
 
-    function<int(int, int)> startTimeIterator;
-    startTimeIterator = [&](int i, int idx) -> int {
-        if (idx == week[i].size()) {
-            return 0;
-        } else {
-            if (week[i][idx].slot[0].location == "E-Learn_C") {
-                return startTimeIterator(i, idx + 1);
-            }
-            else {
-                return week[i][idx].slot[0].startTime;
+    auto startTimeIterator = [&](int i) -> int {
+        int startTime = 0;
+        if (week[i].empty()) {return 0;}
+        for (int idx = 0; idx < week[i].size(); ++idx) {
+            if (week[i][idx].slot[0].location != "E-Learn_C") {
+                startTime = week[i][idx].slot[0].startTime;
+                break;
             }
         }
+        return startTime;
     };
 
-    function<vector<float>(void)> startTimeVect;
-    startTimeVect = [&]() -> vector<float> {
+    auto startTimeVect = [&]() -> vector<float> {
         vector<float> startTimes{};
         for (size_t i{0}; i < week.size(); i++) {
             if (week[i].empty()) {
                 startTimes.push_back(0);
             } else {
-                int startingTime = startTimeIterator(i, 0);
+                int startingTime = startTimeIterator(i);
                 startTimes.push_back(floor(startingTime/100) + static_cast<float>(startingTime%100)/60);
             }
         }
         return startTimes;
     };
 
-        function<int(int, int)> endTimeIterator;
-        endTimeIterator = [&](int i, int idx) -> int {
-        if (idx < 0) {
-            return 0;
-        } else {
-            if (week[i][idx].slot[0].location == "E-Learn_C") {
-                return endTimeIterator(i, idx - 1);
-            }
-            else {
-                return week[i][idx].slot[0].endTime;
+    auto endTimeIterator = [&](int i) -> int {
+        int endTime{0};
+        if (week[i].empty()) {return 0;}
+        for (size_t j{week[i].size()-1}; j > -1; j--) {
+            if (week[i][j].slot[0].location != "E-Learn_C") {
+                endTime = week[i][j].slot[0].endTime;
+                break;
             }
         }
+        return endTime;
     };
 
-    function<vector<float>(void)> endTimeVect;
-    endTimeVect = [&]() -> vector<float> {
+    auto endTimeVect = [&]() -> vector<float> {
         vector<float> endTimes{};
         for (size_t i{0}; i < week.size(); i++) {
             if (week[i].empty()) {
                 endTimes.push_back(0);
             } else {
-                int endingTime = endTimeIterator(i, week[i].size()-1);
+                int endingTime = endTimeIterator(i);
                 endTimes.push_back(floor(endingTime/100) + static_cast<float>(endingTime%100)/60);
             }
         }
         return endTimes;
     };
 
-    function<vector<float>(void)> gapTimeVect;
-    gapTimeVect = [&week]() -> vector<float> {
+    auto gapTimeVect = [&week]() -> vector<float> {
         vector<float> gapTimes{};
         for (size_t i{0}; i < week.size(); i++) {
-            int gapSum{0};
+            float gapSum{0};
+            if (week[i].empty()) {
+                gapTimes.push_back(0);
+                continue;
+            }
             vector<TimeSlot> inPersonClasses{};
             if (!week[i].empty()) {
                 for (size_t j{0}; j < week[i].size(); j++) {
@@ -395,17 +657,17 @@ int score(TimeTable& curr, json multipliers) {
                         inPersonClasses.push_back(week[i][j].slot[0]);
                     }
                 }
-            } else {
-                gapTimes.push_back(0);
-            }
+            } 
             if (inPersonClasses.size() <= 1) {
                 gapTimes.push_back(0);
+                continue;
             }
             else {
                 for (size_t j{0}; j < inPersonClasses.size()-1; j++) {
                     int k = j + 1;
-                    int gapInt{inPersonClasses[k].startTime - inPersonClasses[j].endTime};
-                    float gap = static_cast<float>(floor(gapInt / 100)) + static_cast<float>(gapInt % 100) / 60.0f;
+                    float startTime = static_cast<float>(floor(inPersonClasses[k].startTime / 100)) + static_cast<float>(inPersonClasses[k].startTime % 100) / 60.0f;
+                    float endTime = static_cast<float>(floor(inPersonClasses[j].endTime / 100)) + static_cast<float>(inPersonClasses[j].endTime % 100) / 60.0f;
+                    float gap = startTime - endTime;
                     gapSum += gap;
                 }
                 gapTimes.push_back(gapSum);
@@ -419,11 +681,69 @@ int score(TimeTable& curr, json multipliers) {
     vector<float> startTimes = startTimeVect();
     vector<float> endTimes = endTimeVect();
     vector<float> gapTimes = gapTimeVect();
-    score -= freeDays * 4 * multipliers.at("freeDayMult").get<float>();
+    score -= static_cast<float>(freeDays/week.size()) * multipliers.at("freeDayMult").get<float>();
+    float earliest = multipliers["hours"][0].get<float>();
+    float latest = multipliers["hours"][1].get<float>();
+    float longestDay = latest - earliest;
     for (size_t i{0}; i < startTimes.size(); i++) {
-        score += (24 - startTimes[i])/8 * multipliers.at("startTimeMult").get<float>();
-        score += (endTimes[i])/8 * multipliers.at("endTimeMult").get<float>();
-        score += abs(gapTimes[i] - multipliers["gapTimeMult"][0].get<float>())/4 * multipliers["gapTimeMult"][1].get<float>();
+        if (startTimes[i] == 0) {
+            continue;
+        } else {
+            score += (24.0f - startTimes[i])/longestDay * multipliers.at("startTimeMult").get<float>();
+            score += (endTimes[i] - earliest)/longestDay * multipliers.at("endTimeMult").get<float>();
+            if (week[i].size() <= 1) {
+                continue;
+            } else {
+                score += fabs(gapTimes[i] - multipliers["gapTimeMult"][0].get<float>()) * multipliers["gapTimeMult"][1].get<float>();
+            }
+        }
+    }
+
+    auto locationBasedScoring = [&]() -> vector<int> {
+        if (multipliers["locationInputs"][0].get<int>() == 0) {
+            return {};
+        } else {
+            vector<int> noGapsFarApart = {};
+            for (size_t i{0}; i < week.size(); i++) {
+                int noGapsFarApartToday{0};
+                if (week[i].empty() || week[i].size() <= 1) {
+                    noGapsFarApart.push_back(0);
+                    continue;
+                }
+                for (size_t j{0}; j < week[i].size()-1; j++) {
+                    if (week[i][j].slot[0].endTime == week[i][j+1].slot[0].startTime) {
+                        string location1 = week[i][j].slot[0].location;
+                        string location2 = week[i][j+1].slot[0].location;
+                        if (location1 == "E-Learn_C" || location2 == "E-Learn_C") {
+                            continue;
+                        } else {
+                            location1 = locParse(location1);
+                            location2 = locParse(location2);
+                            if (!checkClose(location1, location2)) {
+                                noGapsFarApartToday += 1;
+                            }
+                        }
+                    }
+                }
+                noGapsFarApart.push_back(noGapsFarApartToday);
+            }
+            return noGapsFarApart;
+        }
+    };
+    vector<int> locationCounts = locationBasedScoring();
+    if (!locationCounts.empty()) {
+        for (size_t i{0}; i < locationCounts.size(); i++) {
+            if (locationCounts[i] == 0) {
+                if (week[i].empty()) {
+                    continue;
+                } else {
+                    score -= 0.5 * multipliers["locationInputs"][1].get<float>();
+                }
+            }
+            else {
+                score += locationCounts[i] * multipliers["locationInputs"][1].get<float>();
+            }
+        }
     }
     return score;
 }
@@ -484,12 +804,16 @@ int main(int argc, char* argv[]) {
         }
     }
     try {
+        auto start = std::chrono::high_resolution_clock::now();
         vector<TimeTable> allPossible = allValid(semesterModules, blocked);
-        vector<double> scores{};
+        cout << allPossible.size() << "\n";
         sort(allPossible.begin(), allPossible.end(), [&](TimeTable& a, TimeTable& b) {
             return score(a, mult) < score(b, mult);
         });
         printTimetables(allPossible, mult.at("noOfTimetables").get<int>());
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> duration = end - start;
+        cout << "Execution time: " << duration.count() << " seconds." << "\n";
     } catch (const exception& e) {
         cerr << "Unexpected Error: " << e.what();
     }

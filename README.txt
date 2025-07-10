@@ -20,6 +20,9 @@ Error handling of inputs
 Parsing Data Settled
 C++ to read json file and add into structs
 Score function implemented
+Location Based Feature implemented!
+Touhed up on the inefficiencies
 
 Next Step:
-Add location based planning
+Any further implementation? Just let me know!
+Work further on scoring maybe

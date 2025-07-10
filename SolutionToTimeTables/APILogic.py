@@ -3,6 +3,7 @@ import json
 import subprocess
 import datetime
 import os
+import math
 
 def defaultValueErrorString(a, b):
     return f"Please enter an integer between {a} and {b}"
@@ -52,7 +53,7 @@ def getAcadYear():
     
 currAcadYear = getAcadYear()
 
-def generate_APIURL(modCode):
+def generate_modAPIURL(modCode):
     yearKey = f"{currAcadYear}-{currAcadYear+1}"
     return f"https://api.nusmods.com/v2/{yearKey}/modules/{modCode}.json"
 
@@ -63,7 +64,7 @@ def inputMod(semesterNo):
             if (modCode == 'B'):
                 return modCode
             else:
-                response = requests.get(generate_APIURL(modCode))
+                response = requests.get(generate_modAPIURL(modCode))
                 response.raise_for_status()
                 data = response.json()
                 semesterAvail = []
@@ -79,6 +80,10 @@ def inputMod(semesterNo):
             print("Get better connection, then try again!")
         except Exception as e:
             print(f"An Unknown Error Occured: {e} \n Please Try Again :(")
+
+def generate_locAPIURL(semester):
+    yearKey = f"{currAcadYear}-{currAcadYear+1}"
+    return f"https://api.nusmods.com/v2/{yearKey}/semesters/{semester}/venues.json"
 
 def gettingModules(noMods):
     modules = []
@@ -206,24 +211,64 @@ def getMult():
         try:
             freeDayMultStr = input("Please input how heavily you want to weigh Free Days: ")
             freeDayMult = float(freeDayMultStr)
-            multipliers["freeDayMult"] = freeDayMult
-            break
+            if (freeDayMult > 10 or freeDayMult < 0):
+                print("Please enter a number from 0 - 10")
+            else:
+                multipliers["freeDayMult"] = freeDayMult
+                break
         except ValueError as e:
             print("Please enter a number from 0 - 10")
+    while True:
+        try:
+            multipliers["hours"] = []
+            startHourStr = input("Please let us know when you would like your day to start in HHMM: ")
+            if (len(startHourStr) != 4):
+                print("Please enter a valid time!")
+            else:
+                startHour = int(startHourStr)
+                if (startHour < 0 or startHour > 2359):
+                    print("Please enter a valid time!")
+                else:
+                    startHour = math.floor(startHour/100) + (startHour%100)/60
+                    multipliers["hours"].append(startHour)
+                    break
+        except ValueError as e:
+            print("Please enter a valid time")
     while True:
         try:
             startTimeMultStr = input("Please input how heavily you want to weigh start time (later the better): ")
             startTimeMult = float(startTimeMultStr)
-            multipliers["startTimeMult"] = startTimeMult
-            break
+            if (startTimeMult > 10 or startTimeMult < 0):
+                print("Please enter a number from 0 - 10")
+            else:
+                multipliers["startTimeMult"] = startTimeMult
+                break
         except ValueError as e:
             print("Please enter a number from 0 - 10")
     while True:
         try:
+            endHourStr = input("Please let us know when you would like your day to end in HHMM: ")
+            if (len(endHourStr) != 4):
+                print("Please enter a valid time!")
+            else:
+                endHour = int(endHourStr)
+                if (endHour < startHour or endHour > 2359):
+                    print("Please enter a valid end time!")
+                else:
+                    endHour = math.floor(endHour/100) + (endHour%100)/60
+                    multipliers["hours"].append(endHour)
+                    break
+        except ValueError as e:
+            print("Please enter a valid time")
+    while True:
+        try:
             endTimeMultStr = input("Please input how heavily you want to weigh end time (earlier the better): ")
             endTimeMult = float(endTimeMultStr)
-            multipliers["endTimeMult"] = endTimeMult
-            break
+            if (endTimeMult > 10 or endTimeMult < 0):
+                print("Please enter a number from 0 - 10")
+            else:
+                multipliers["endTimeMult"] = endTimeMult
+                break
         except ValueError as e:
             print("Please enter a number from 0 - 10")
     while True:
@@ -231,8 +276,8 @@ def getMult():
             multipliers["gapTimeMult"] = []
             optGapTimeStr = input("Please put the optimal gap time you wish to have per day, in hours: ")
             optimalGapTime = float(optGapTimeStr)
-            if (optimalGapTime < 0):
-                print("Please input a non-negative number")
+            if (optimalGapTime < 0 or optimalGapTime > 10):
+                print("Please input a non-negative number smaller than 10")
             else:
                 multipliers["gapTimeMult"].append(optimalGapTime)
                 break
@@ -242,8 +287,11 @@ def getMult():
         try:
             gapTimeMultStr = input("Please input how heavily you want to weigh gap time (closer to you optimal, the better): ")
             gapTimeMult = float(gapTimeMultStr)
-            multipliers["gapTimeMult"].append(gapTimeMult)
-            break
+            if (gapTimeMult > 10 or gapTimeMult < 0):
+                print("Please enter a number fro 0 to 10")
+            else:
+                multipliers["gapTimeMult"].append(gapTimeMult)
+                break
         except ValueError as e:
             print("Please enter a number from 0 - 10")
     while True:
@@ -257,13 +305,32 @@ def getMult():
                 break
         except ValueError as e:
             print("Please enter a positive integer")
-    return multipliers 
+    print("In this program, we also made a feature to take location into account.")
+    while True:
+        try:
+            locationAccInputStr = input("If you would like to take location into account, enter 1. Otherwise, enter 0: ")
+            locationInput = int(locationAccInputStr)
+            if (locationInput != 1 and locationInput != 0):
+                print("Please enter either 1 (for yes), or 0 (for no)")
+            else:
+                if (locationInput == 1):
+                    locationMultStr = input("How much would you like to weight location on a scale from 0 to 10: ")
+                    locationMult = float(locationMultStr)
+                    if (locationMult < 0 or locationMult > 10):
+                        print("Please enter a number from 0 - 10")
+                else:
+                    locationMult = 0
+            multipliers["locationInputs"] = [locationInput, locationMult]
+            break
+        except ValueError as e:
+            print("Please enter a number")
+    return multipliers
 
 multipliers = getMult()
 
 for mod in modCodeList:
     particularModData = {}
-    response = requests.get(generate_APIURL(mod))
+    response = requests.get(generate_modAPIURL(mod))
     data = response.json()
     particularModData["moduleCode"] = data["moduleCode"]
     particularModData["MCs"] = int(data["moduleCredit"])
