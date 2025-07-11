@@ -24,5 +24,4 @@ Location Based Feature implemented!
 Touched up on the inefficiencies, shorting time from 400 seconds to 60 seconds execution time!
 
 Next Step:
-Any further implementation? Just let me know!
-Work further on scoring maybe
+Writing up web server and frontend to host this for better UI
