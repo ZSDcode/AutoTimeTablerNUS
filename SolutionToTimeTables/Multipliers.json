@@ -1,18 +1,18 @@
 {
-    "freeDayMult": 5.0,
+    "freeDayMult": 3.0,
     "hours": [
-        10.0,
-        18.0
+        8.0,
+        20.0
     ],
-    "startTimeMult": 2.0,
-    "endTimeMult": 1.5,
+    "startTimeMult": 1.0,
+    "endTimeMult": 1.0,
     "gapTimeMult": [
-        1.5,
-        1.5
+        0.0,
+        9.0
     ],
     "noOfTimetables": 3,
     "locationInputs": [
         1,
-        5.0
+        10.0
     ]
 }

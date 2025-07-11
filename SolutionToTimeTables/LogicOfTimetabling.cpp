@@ -13,6 +13,7 @@
 #include <functional> // For std::function
 #include <filesystem>
 #include <algorithm>
+#include <queue>
 using namespace std;
 
 enum class WeekDay {MON, TUE, WED, THU, FRI, SAT, SUN};
@@ -218,7 +219,7 @@ vector<TimeTable> allValid(vector<Module> semester, vector<TimeSlot> blockedPeri
     return s;
 }
 
-vector<vector<ChosenModuleSlot>> sortDaysOnTime(TimeTable& curr) {
+vector<vector<ChosenModuleSlot>> sortDaysOnTime(const TimeTable& curr) {
     vector<ChosenModuleSlot> mon, tue, wed, thu, fri, sat, sun;
     for (size_t i{0}; i < curr.size(); i++) {
         for (size_t j{0}; j < curr[i].slot.size(); j++) {
@@ -262,7 +263,7 @@ vector<vector<ChosenModuleSlot>> sortDaysOnTime(TimeTable& curr) {
     return week;
 }
 
-void printTimetable(TimeTable& curr) {
+void printTimetable(const TimeTable& curr) {
     vector<vector<ChosenModuleSlot>> week = sortDaysOnTime(curr);
     function<void(vector<ChosenModuleSlot>&)> printDay = [](const vector<ChosenModuleSlot>& chosenDay) -> void {
         for (size_t i{0}; i < chosenDay.size(); i++) {
@@ -279,7 +280,7 @@ void printTimetable(TimeTable& curr) {
     }
 }
 
-void printTimetables(vector<TimeTable>& all, int noOfOutputTimeTables) {
+void printTimetables(const vector<TimeTable>& all, int noOfOutputTimeTables) {
     if (!all.empty()) {
         if (noOfOutputTimeTables < all.size()) {
             for (int i = 0; i < noOfOutputTimeTables; i++) {
@@ -569,7 +570,7 @@ bool checkClose(const string& loc1, const string& loc2) {
     }
 }
 
-int score(TimeTable& curr, json& multipliers) {
+int score(const TimeTable& curr, json& multipliers) {
     vector<vector<ChosenModuleSlot>> week = sortDaysOnTime(curr);
     auto freeDaysCounter = [&week]() -> int {
         int count = 0;
@@ -805,14 +806,41 @@ int main(int argc, char* argv[]) {
     }
     try {
         auto start = std::chrono::high_resolution_clock::now();
+        auto startMini = std::chrono::high_resolution_clock::now();
         vector<TimeTable> allPossible = allValid(semesterModules, blocked);
+        auto endMini = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> duration = endMini - startMini;
+        cout << "Duration to get all Timetables: " << duration.count() << " seconds. \n";
         cout << allPossible.size() << "\n";
-        sort(allPossible.begin(), allPossible.end(), [&](TimeTable& a, TimeTable& b) {
-            return score(a, mult) < score(b, mult);
-        });
-        printTimetables(allPossible, mult.at("noOfTimetables").get<int>());
+        int timetablesGenerated = mult["noOfTimetables"].get<int>();
+        unordered_map<const TimeTable*, int> timetableToScore{};
+        for (size_t i{0}; i < allPossible.size(); i++) {
+            timetableToScore[&allPossible[i]] = score(allPossible[i], mult);
+        }
+        auto sortCmd = [&timetableToScore](const TimeTable* a, const TimeTable* b) {
+            return timetableToScore[a] > timetableToScore[b];
+        };
+        priority_queue<TimeTable*, vector<TimeTable*>, decltype(sortCmd)> topX(sortCmd);
+        for (int i{0}; i < timetablesGenerated; i++) {
+            topX.push(&allPossible[i]);
+        }
+        for (int j{timetablesGenerated}; j < allPossible.size(); j++) {
+            if (timetableToScore[&allPossible[j]] > timetableToScore[topX.top()]) {
+                continue;
+            }
+            topX.push(&allPossible[j]);
+            topX.pop();
+        }
+        startMini = std::chrono::high_resolution_clock::now();
+        duration = startMini - endMini;
+        cout << "Duration to sort all Timetables: " << duration.count() << " seconds. \n";
+        for (size_t i{0}; i < timetablesGenerated; i++) {
+            cout << "Timetable " << timetablesGenerated - i << ": \n";
+            printTimetable(*(topX.top()));
+            topX.pop();
+        }
         auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> duration = end - start;
+        duration = end - start;
         cout << "Execution time: " << duration.count() << " seconds." << "\n";
     } catch (const exception& e) {
         cerr << "Unexpected Error: " << e.what();
