@@ -21,7 +21,7 @@ Parsing Data Settled
 C++ to read json file and add into structs
 Score function implemented
 Location Based Feature implemented!
-Touhed up on the inefficiencies
+Touched up on the inefficiencies, shorting time from 400 seconds to 60 seconds execution time!
 
 Next Step:
 Any further implementation? Just let me know!
