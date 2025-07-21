@@ -204,7 +204,7 @@ blockPeriodNumber = gettingNumberOfBlockPeriods()
 blockPeriodList = gettingBlockPeriod(blockPeriodNumber)
 
 def getMult():
-    print("Right now, you'll be inputting multiple values on the scale of 1 to 10 (of course you can weight higher or even negative up to preference). " \
+    print("Right now, you'll be inputting multiple values on the scale of 1 to 10 (of course you can weight higher or even negative up to preference). " 
     "\n This is to evaluate your possible timetables to find your best one posible")
     multipliers = {}
     while True:
@@ -320,13 +320,26 @@ def getMult():
                         print("Please enter a number from 0 - 10")
                 else:
                     locationMult = 0
-            multipliers["locationInputs"] = [locationInput, locationMult]
-            break
+                multipliers["locationInputs"] = [locationInput, locationMult]
+                break
         except ValueError as e:
             print("Please enter a number")
     return multipliers
 
+def getELearn():
+    while True:
+        try:
+            ELearnInput = input("Please indicate if you would like to account for E-Learning options if there are alternatives (1 for yes, 0 for no): ")
+            ELearnInt = int(ELearnInput)
+            if (ELearnInt != 0 and ELearnInt != 1):
+                print("Please enter either 1 (for yea), or 0 (for no)")
+            else:
+                return ELearnInt
+        except ValueError as e:
+            print("Please enter 1 (for yes) or 0 (for no)")
+
 multipliers = getMult()
+eLearnInput = getELearn()
 
 for mod in modCodeList:
     particularModData = {}
@@ -375,8 +388,11 @@ for mod in modCodeList:
                 listOfTime.pop()
                 dupeClasses.append(classNo)
         for dupeClass in dupeClasses:
-            if (intermediateGroupedLessons[lessonType][dupeClass][0]["location"] != "E-Learn_C"):
-                del intermediateGroupedLessons[lessonType][dupeClass]
+            if (eLearnInput == 1):
+                if (intermediateGroupedLessons[lessonType][dupeClass][0]["location"] != "E-Learn_C"):
+                    del intermediateGroupedLessons[lessonType][dupeClass]
+            else:
+                    del intermediateGroupedLessons[lessonType][dupeClass]
     particularModData["potentialLessons"] = intermediateGroupedLessons
     modData.append(particularModData)
 baseDir = os.path.dirname(os.path.abspath(__file__))

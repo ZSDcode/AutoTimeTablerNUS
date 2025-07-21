@@ -5,14 +5,12 @@
 #include <string>
 #include <map>
 #include <utility> // For std::move
-#include <algorithm> // For std::sort, std::min
 #include <chrono>    // For timing (though not used in this snippet)
 #include <fstream>   // For file operations
 #include <stdexcept> // For std::runtime_error
 #include <optional>  // Still useful for other optional types if needed later, but not for Module exams
 #include <functional> // For std::function
 #include <filesystem>
-#include <algorithm>
 #include <queue>
 using namespace std;
 
@@ -47,6 +45,15 @@ struct TimeSlot {
             return false;
         } else {
             return !(startTime >= t2.endTime || endTime <= t2.startTime);
+        }
+    }
+
+    bool sameTimeslot(const TimeSlot& t2) const {
+        if (day == t2.day) {
+            return (startTime == t2.startTime && endTime == t2.endTime);
+        }
+        else {
+            return false;
         }
     }
 };
@@ -169,55 +176,6 @@ struct ChosenModuleSlot {
 };
 
 using TimeTable = vector<ChosenModuleSlot>;
-
-void generate_timetables(vector<vector<ChosenModuleSlot>>& allPossible, size_t componentIdx, TimeTable& curr, vector<TimeTable>& all_timetables, vector<TimeSlot> blockedPeriods) {
-    size_t totRequirements{allPossible.size()};
-    if (componentIdx == totRequirements) {
-        all_timetables.push_back(curr);
-        return;
-    }
-    else {
-        vector<ChosenModuleSlot> choosingSlot = allPossible[componentIdx];
-        for (size_t i{0}; i < choosingSlot.size(); i++) {
-            bool clash = false;
-            for (size_t j{0}; j < curr.size(); j++) {
-                if (choosingSlot[i].overlappingSlot(curr[j])) {
-                    clash = true;
-                    break;
-                }
-            }
-            for (size_t j{0}; j < blockedPeriods.size(); j++) {
-                if (choosingSlot[i].overlappingTime(blockedPeriods[j])) {
-                    clash = true;
-                    break;
-                }
-            }
-            if (!clash) {
-                curr.push_back(choosingSlot[i]);
-                generate_timetables(allPossible, componentIdx + 1, curr, all_timetables,blockedPeriods);
-                curr.pop_back();
-            }
-        }
-    }
-}
-
-vector<TimeTable> allValid(vector<Module> semester, vector<TimeSlot> blockedPeriods) {
-    vector<TimeTable> s{};
-    TimeTable initial{};
-    vector<vector<ChosenModuleSlot>> allPossibleSlots;
-    for (size_t i{0}; i < semester.size(); i++) {
-        for (size_t j{0}; j < semester[i].requirements.size(); j++) {
-            vector<ChosenModuleSlot> possibleSlotsForParticularLesson;
-            for (size_t k{0}; k < semester[i].requirements[j].options.size(); k++) {
-                ChosenModuleSlot particularSlot(semester[i].modCode, semester[i].requirements[j].lesson, semester[i].requirements[j].options[k]);
-                possibleSlotsForParticularLesson.push_back(particularSlot);
-            }
-            allPossibleSlots.push_back(possibleSlotsForParticularLesson);
-        }
-    }
-    generate_timetables(allPossibleSlots, 0, initial, s, blockedPeriods);
-    return s;
-}
 
 vector<vector<ChosenModuleSlot>> sortDaysOnTime(const TimeTable& curr) {
     vector<ChosenModuleSlot> mon, tue, wed, thu, fri, sat, sun;
@@ -570,7 +528,46 @@ bool checkClose(const string& loc1, const string& loc2) {
     }
 }
 
-int score(const TimeTable& curr, json& multipliers) {
+unordered_map<string, string> mappingLoc(const vector<Module> semester) {
+    unordered_map<string, string> returnMapping;
+    for (const Module& m : semester) {
+        for (const ModRequire& mR : m.requirements) {
+            for (size_t i{0}; i < mR.options.size(); i++) {
+                for (const TimeSlot& t : mR.options[i]) {
+                    if (t.location == "E-Learn_C") {
+                        returnMapping[t.location] = t.location;
+                        continue;
+                    }
+                    returnMapping[t.location] = locParse(t.location);
+                }
+            }
+        }
+    }
+    return returnMapping;
+}
+
+struct ScoreParams {
+    float freeDayMult;
+    float startTime;
+    float endTime;
+    float startTimeMult;
+    float endTimeMult;
+    float gapTime;
+    float gapTimeMult;
+    int noOfTimetables;
+    int locationBool;
+    float locationMult;
+
+    ScoreParams(json multipliers): freeDayMult(multipliers.at("freeDayMult").get<float>()), 
+    startTime(multipliers["hours"][0].get<float>()), endTime(multipliers["hours"][1].get<float>()),
+    startTimeMult(multipliers.at("startTimeMult").get<float>()), endTimeMult(multipliers.at("endTimeMult").get<float>()),
+    gapTime(multipliers["gapTimeMult"][0].get<float>()), gapTimeMult(multipliers["gapTimeMult"][1].get<float>()),
+    noOfTimetables(multipliers.at("noOfTimetables").get<int>()), locationBool(multipliers["locationInputs"][0].get<int>()),
+    locationMult(multipliers["locationInputs"][1].get<float>()) {}
+};
+
+int score(const TimeTable& curr, ScoreParams multipliers, const unordered_map<string, string>& locationParsed){
+    int locBool{multipliers.locationBool};
     vector<vector<ChosenModuleSlot>> week = sortDaysOnTime(curr);
     auto freeDaysCounter = [&week]() -> int {
         int count = 0;
@@ -682,26 +679,30 @@ int score(const TimeTable& curr, json& multipliers) {
     vector<float> startTimes = startTimeVect();
     vector<float> endTimes = endTimeVect();
     vector<float> gapTimes = gapTimeVect();
-    score -= static_cast<float>(freeDays/week.size()) * multipliers.at("freeDayMult").get<float>();
-    float earliest = multipliers["hours"][0].get<float>();
-    float latest = multipliers["hours"][1].get<float>();
-    float longestDay = latest - earliest;
+    score -= static_cast<float>(freeDays/week.size()) * multipliers.freeDayMult;
+    float earliest{multipliers.startTime};
+    float latest{multipliers.endTime};
+    float longestDay{latest - earliest};
+    float startTimeMult{multipliers.startTimeMult};
+    float endTimeMult{multipliers.endTimeMult};
+    float optGapTime{multipliers.gapTime};
+    float gapTimeMult{multipliers.gapTimeMult};
     for (size_t i{0}; i < startTimes.size(); i++) {
         if (startTimes[i] == 0) {
             continue;
         } else {
-            score += (24.0f - startTimes[i])/longestDay * multipliers.at("startTimeMult").get<float>();
-            score += (endTimes[i] - earliest)/longestDay * multipliers.at("endTimeMult").get<float>();
+            score += (24.0f - startTimes[i])/longestDay * startTimeMult;
+            score += (endTimes[i] - earliest)/longestDay * endTimeMult;
             if (week[i].size() <= 1) {
                 continue;
             } else {
-                score += fabs(gapTimes[i] - multipliers["gapTimeMult"][0].get<float>()) * multipliers["gapTimeMult"][1].get<float>();
+                score += fabs(gapTimes[i] - optGapTime) * gapTimeMult;
             }
         }
     }
 
     auto locationBasedScoring = [&]() -> vector<int> {
-        if (multipliers["locationInputs"][0].get<int>() == 0) {
+        if (multipliers.locationBool == 0) {
             return {};
         } else {
             vector<int> noGapsFarApart = {};
@@ -713,13 +714,11 @@ int score(const TimeTable& curr, json& multipliers) {
                 }
                 for (size_t j{0}; j < week[i].size()-1; j++) {
                     if (week[i][j].slot[0].endTime == week[i][j+1].slot[0].startTime) {
-                        string location1 = week[i][j].slot[0].location;
-                        string location2 = week[i][j+1].slot[0].location;
+                        string location1 = locationParsed.at(week[i][j].slot[0].location);
+                        string location2 = locationParsed.at(week[i][j+1].slot[0].location);
                         if (location1 == "E-Learn_C" || location2 == "E-Learn_C") {
                             continue;
                         } else {
-                            location1 = locParse(location1);
-                            location2 = locParse(location2);
                             if (!checkClose(location1, location2)) {
                                 noGapsFarApartToday += 1;
                             }
@@ -738,15 +737,83 @@ int score(const TimeTable& curr, json& multipliers) {
                 if (week[i].empty()) {
                     continue;
                 } else {
-                    score -= 0.5 * multipliers["locationInputs"][1].get<float>();
+                    score -= multipliers.locationMult;
                 }
             }
             else {
-                score += locationCounts[i] * multipliers["locationInputs"][1].get<float>();
+                score += locationCounts[i] * multipliers.locationMult;
             }
         }
     }
     return score;
+}
+
+void generate_timetables(vector<vector<ChosenModuleSlot>>& allPossible, size_t componentIdx, TimeTable& curr, vector<TimeTable>& all_timetables, vector<TimeSlot> blockedPeriods) {
+    size_t totRequirements{allPossible.size()};
+    if (componentIdx == totRequirements) {
+        all_timetables.push_back(curr);
+        return;
+    }
+    else {
+        vector<ChosenModuleSlot> choosingSlot = allPossible[componentIdx];
+        for (size_t i{0}; i < choosingSlot.size(); i++) {
+            bool clash = false;
+            for (size_t j{0}; j < curr.size(); j++) {
+                if (choosingSlot[i].overlappingSlot(curr[j])) {
+                    clash = true;
+                    break;
+                }
+            }
+            for (size_t j{0}; j < blockedPeriods.size(); j++) {
+                if (choosingSlot[i].overlappingTime(blockedPeriods[j])) {
+                    clash = true;
+                    break;
+                }
+            }
+            if (!clash) {
+                curr.push_back(choosingSlot[i]);
+                generate_timetables(allPossible, componentIdx + 1, curr, all_timetables,blockedPeriods);
+                curr.pop_back();
+            }
+        }
+    }
+}
+
+vector<TimeTable> allValid(vector<Module> semester, vector<TimeSlot> blockedPeriods) {
+    vector<TimeTable> s{};
+    TimeTable initial{};
+    vector<vector<ChosenModuleSlot>> allPossibleSlots;
+    for (size_t i{0}; i < semester.size(); i++) {
+        for (size_t j{0}; j < semester[i].requirements.size(); j++) {
+            vector<ChosenModuleSlot> possibleSlotsForParticularLesson;
+            for (size_t k{0}; k < semester[i].requirements[j].options.size(); k++) {
+                ChosenModuleSlot particularSlot(semester[i].modCode, semester[i].requirements[j].lesson, semester[i].requirements[j].options[k]);
+                possibleSlotsForParticularLesson.push_back(particularSlot);
+            }
+            allPossibleSlots.push_back(possibleSlotsForParticularLesson);
+        }
+    }
+    generate_timetables(allPossibleSlots, 0, initial, s, blockedPeriods);
+    if (s.empty()) {
+        throw runtime_error("No Timetables possible! Pick a different combination of modules!");
+    }
+    return s;
+}
+
+bool checkRedundancy(const TimeTable& a, const TimeTable b, int noOfSameMods) {
+    int redundantMods{0};
+    for (auto& slota : a) {
+        for (auto& slotb : b) {
+            if (slota.slot[0].sameTimeslot(slotb.slot[0])) {
+                redundantMods += 1;
+                break;
+            }
+        }
+        if (redundantMods >= noOfSameMods) {
+            return true;
+        }
+    }
+    return false;
 }
 
 namespace fs = std::filesystem;
@@ -808,17 +875,43 @@ int main(int argc, char* argv[]) {
         auto start = std::chrono::high_resolution_clock::now();
         auto startMini = std::chrono::high_resolution_clock::now();
         vector<TimeTable> allPossible = allValid(semesterModules, blocked);
+        unordered_map<string, string> parsedLocations = mappingLoc(semesterModules);
         auto endMini = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> duration = endMini - startMini;
-        cout << "Duration to get all Timetables: " << duration.count() << " seconds. \n";
+        cout << "Duration to get all Timetables and parse location of all possible venues: " << duration.count() << " seconds. \n";
         cout << allPossible.size() << "\n";
-        int timetablesGenerated = mult["noOfTimetables"].get<int>();
+        ScoreParams multParams = ScoreParams(mult);
+        int timetablesGenerated = multParams.noOfTimetables;
         unordered_map<const TimeTable*, int> timetableToScore{};
+        startMini = std::chrono::high_resolution_clock::now();
         for (size_t i{0}; i < allPossible.size(); i++) {
-            timetableToScore[&allPossible[i]] = score(allPossible[i], mult);
+            timetableToScore[&allPossible[i]] = score(allPossible[i], multParams, parsedLocations);
         }
+        endMini = std::chrono::high_resolution_clock::now();
+        duration = endMini - startMini;
+        cout << "Duration to score all Timetables: " << duration.count() << " seconds. \n";
+        /*vector<TimeTable*> dupesMadd{};
+        int noOfSlots = allPossible[0].size();
+        for (size_t i{0}; i < allPossible.size()-1; i++) {
+            for (size_t j{i+1}; j < allPossible.size(); j++) {
+                if (checkRedundancy(allPossible[i], allPossible[j], noOfSlots-1)) {
+                    dupesMadd.push_back(&(allPossible[i]));
+                    break;
+                }
+            }
+        }
+        for (size_t i{0}; i < dupesMadd.size(); i++) {
+            timetableToScore.erase(dupesMadd[i]);
+        }
+        startMini = std::chrono::high_resolution_clock::now();
+        duration = startMini - endMini;
+        cout << "Number of Redundant Mods: " << dupesMadd.size() << "\n";
+        cout << "Number of Slots: " << noOfSlots << "\n";
+        cout << "Duration to find all redundant Timetables: " << duration.count() << " seconds. \n";
+        cout << "Number of mapped Timetables: " << timetableToScore.size() << "\n";
+        */
         auto sortCmd = [&timetableToScore](const TimeTable* a, const TimeTable* b) {
-            return timetableToScore[a] > timetableToScore[b];
+            return (timetableToScore[a] < timetableToScore[b]);
         };
         priority_queue<TimeTable*, vector<TimeTable*>, decltype(sortCmd)> topX(sortCmd);
         for (int i{0}; i < timetablesGenerated; i++) {
@@ -834,11 +927,15 @@ int main(int argc, char* argv[]) {
         startMini = std::chrono::high_resolution_clock::now();
         duration = startMini - endMini;
         cout << "Duration to sort all Timetables: " << duration.count() << " seconds. \n";
+        //vector<TimeTable>  allGoodTimetables{};
         for (size_t i{0}; i < timetablesGenerated; i++) {
             cout << "Timetable " << timetablesGenerated - i << ": \n";
             printTimetable(*(topX.top()));
+            cout << "Timetable score: " << timetableToScore[topX.top()] << "\n" << "\n";
+            //allGoodTimetables.push_back(*(topX.top()));
             topX.pop();
         }
+        //cout << checkRedundancy(allGoodTimetables[0], allGoodTimetables[1], noOfSlots * 3/4);
         auto end = std::chrono::high_resolution_clock::now();
         duration = end - start;
         cout << "Execution time: " << duration.count() << " seconds." << "\n";
