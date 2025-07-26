@@ -2,7 +2,7 @@
     "freeDayMult": 5.5,
     "hours": [
         8.0,
-        10.0
+        20.0
     ],
     "startTimeMult": 3.0,
     "endTimeMult": 2.0,
@@ -14,5 +14,6 @@
     "locationInputs": [
         1,
         10.0
-    ]
+    ],
+    "semester": 1
 }

@@ -1,55 +1,51 @@
 [
     {
+        "moduleCode": "MA1522",
+        "MCs": 4,
+        "potentialLessons": {
+            "Lecture": {
+                "2": [
+                    {
+                        "day": "Friday",
+                        "startTime": 1600,
+                        "endTime": 1800,
+                        "location": "LT11"
+                    },
+                    {
+                        "day": "Wednesday",
+                        "startTime": 800,
+                        "endTime": 1000,
+                        "location": "LT11"
+                    }
+                ],
+                "1": [
+                    {
+                        "day": "Thursday",
+                        "startTime": 1600,
+                        "endTime": 1800,
+                        "location": "LT11"
+                    },
+                    {
+                        "day": "Monday",
+                        "startTime": 800,
+                        "endTime": 1000,
+                        "location": "LT11"
+                    }
+                ]
+            }
+        }
+    },
+    {
         "moduleCode": "MA1521",
         "MCs": 4,
         "potentialLessons": {
             "Tutorial": {
-                "28": [
+                "4": [
                     {
-                        "day": "Friday",
-                        "startTime": 1400,
-                        "endTime": 1500,
-                        "location": "S17-0405"
-                    }
-                ],
-                "27": [
-                    {
-                        "day": "Friday",
-                        "startTime": 1300,
-                        "endTime": 1400,
-                        "location": "S17-0611"
-                    }
-                ],
-                "29": [
-                    {
-                        "day": "Friday",
-                        "startTime": 1500,
-                        "endTime": 1600,
-                        "location": "S17-0405"
-                    }
-                ],
-                "30": [
-                    {
-                        "day": "Friday",
-                        "startTime": 1600,
-                        "endTime": 1700,
-                        "location": "S17-0405"
-                    }
-                ],
-                "11": [
-                    {
-                        "day": "Tuesday",
-                        "startTime": 1600,
-                        "endTime": 1700,
-                        "location": "S16-0435"
-                    }
-                ],
-                "14": [
-                    {
-                        "day": "Wednesday",
-                        "startTime": 1000,
-                        "endTime": 1100,
-                        "location": "S16-0309"
+                        "day": "Monday",
+                        "startTime": 1700,
+                        "endTime": 1800,
+                        "location": "S16-0307"
                     }
                 ],
                 "18": [
@@ -60,19 +56,67 @@
                         "location": "S16-0304"
                     }
                 ],
-                "19": [
+                "2": [
                     {
-                        "day": "Thursday",
-                        "startTime": 1300,
-                        "endTime": 1400,
-                        "location": "S16-0304"
+                        "day": "Monday",
+                        "startTime": 1500,
+                        "endTime": 1600,
+                        "location": "S16-0309"
                     }
                 ],
-                "22": [
+                "30": [
                     {
-                        "day": "Thursday",
+                        "day": "Friday",
                         "startTime": 1600,
                         "endTime": 1700,
+                        "location": "S17-0405"
+                    }
+                ],
+                "9": [
+                    {
+                        "day": "Tuesday",
+                        "startTime": 1400,
+                        "endTime": 1500,
+                        "location": "S17-0404"
+                    }
+                ],
+                "8": [
+                    {
+                        "day": "Tuesday",
+                        "startTime": 1300,
+                        "endTime": 1400,
+                        "location": "S17-0404"
+                    }
+                ],
+                "14": [
+                    {
+                        "day": "Wednesday",
+                        "startTime": 1000,
+                        "endTime": 1100,
+                        "location": "S16-0309"
+                    }
+                ],
+                "28": [
+                    {
+                        "day": "Friday",
+                        "startTime": 1400,
+                        "endTime": 1500,
+                        "location": "S17-0405"
+                    }
+                ],
+                "13": [
+                    {
+                        "day": "Wednesday",
+                        "startTime": 900,
+                        "endTime": 1000,
+                        "location": "S16-0309"
+                    }
+                ],
+                "7": [
+                    {
+                        "day": "Tuesday",
+                        "startTime": 1200,
+                        "endTime": 1300,
                         "location": "S17-0404"
                     }
                 ],
@@ -84,44 +128,20 @@
                         "location": "S16-0304"
                     }
                 ],
-                "9": [
-                    {
-                        "day": "Tuesday",
-                        "startTime": 1400,
-                        "endTime": 1500,
-                        "location": "S17-0404"
-                    }
-                ],
-                "2": [
-                    {
-                        "day": "Monday",
-                        "startTime": 1500,
-                        "endTime": 1600,
-                        "location": "S16-0309"
-                    }
-                ],
-                "10": [
-                    {
-                        "day": "Tuesday",
-                        "startTime": 1500,
-                        "endTime": 1600,
-                        "location": "S17-0404"
-                    }
-                ],
-                "13": [
+                "17": [
                     {
                         "day": "Wednesday",
-                        "startTime": 900,
-                        "endTime": 1000,
+                        "startTime": 1300,
+                        "endTime": 1400,
                         "location": "S16-0309"
                     }
                 ],
-                "8": [
+                "29": [
                     {
-                        "day": "Tuesday",
-                        "startTime": 1300,
-                        "endTime": 1400,
-                        "location": "S17-0404"
+                        "day": "Friday",
+                        "startTime": 1500,
+                        "endTime": 1600,
+                        "location": "S17-0405"
                     }
                 ],
                 "24": [
@@ -132,14 +152,6 @@
                         "location": "S17-0611"
                     }
                 ],
-                "5": [
-                    {
-                        "day": "Tuesday",
-                        "startTime": 1000,
-                        "endTime": 1100,
-                        "location": "S17-0512"
-                    }
-                ],
                 "20": [
                     {
                         "day": "Thursday",
@@ -148,27 +160,35 @@
                         "location": "S16-0304"
                     }
                 ],
-                "4": [
-                    {
-                        "day": "Monday",
-                        "startTime": 1700,
-                        "endTime": 1800,
-                        "location": "S16-0307"
-                    }
-                ],
-                "7": [
-                    {
-                        "day": "Tuesday",
-                        "startTime": 1200,
-                        "endTime": 1300,
-                        "location": "S17-0404"
-                    }
-                ],
                 "12": [
                     {
                         "day": "Tuesday",
                         "startTime": 1700,
                         "endTime": 1800,
+                        "location": "S16-0435"
+                    }
+                ],
+                "5": [
+                    {
+                        "day": "Tuesday",
+                        "startTime": 1000,
+                        "endTime": 1100,
+                        "location": "S17-0512"
+                    }
+                ],
+                "22": [
+                    {
+                        "day": "Thursday",
+                        "startTime": 1600,
+                        "endTime": 1700,
+                        "location": "S17-0404"
+                    }
+                ],
+                "11": [
+                    {
+                        "day": "Tuesday",
+                        "startTime": 1600,
+                        "endTime": 1700,
                         "location": "S16-0435"
                     }
                 ],
@@ -180,20 +200,28 @@
                         "location": "S16-0309"
                     }
                 ],
-                "17": [
+                "10": [
                     {
-                        "day": "Wednesday",
-                        "startTime": 1300,
-                        "endTime": 1400,
-                        "location": "S16-0309"
+                        "day": "Tuesday",
+                        "startTime": 1500,
+                        "endTime": 1600,
+                        "location": "S17-0404"
                     }
                 ],
-                "1": [
+                "27": [
                     {
-                        "day": "Monday",
-                        "startTime": 1400,
-                        "endTime": 1500,
-                        "location": "S16-0309"
+                        "day": "Friday",
+                        "startTime": 1300,
+                        "endTime": 1400,
+                        "location": "S17-0611"
+                    }
+                ],
+                "19": [
+                    {
+                        "day": "Thursday",
+                        "startTime": 1300,
+                        "endTime": 1400,
+                        "location": "S16-0304"
                     }
                 ],
                 "15": [
@@ -204,14 +232,6 @@
                         "location": "S16-0309"
                     }
                 ],
-                "23": [
-                    {
-                        "day": "Thursday",
-                        "startTime": 1700,
-                        "endTime": 1800,
-                        "location": "S17-0404"
-                    }
-                ],
                 "3": [
                     {
                         "day": "Monday",
@@ -220,12 +240,12 @@
                         "location": "S16-0307"
                     }
                 ],
-                "26": [
+                "1": [
                     {
-                        "day": "Friday",
-                        "startTime": 1200,
-                        "endTime": 1300,
-                        "location": "S17-0611"
+                        "day": "Monday",
+                        "startTime": 1400,
+                        "endTime": 1500,
+                        "location": "S16-0309"
                     }
                 ],
                 "25": [
@@ -233,6 +253,22 @@
                         "day": "Friday",
                         "startTime": 1100,
                         "endTime": 1200,
+                        "location": "S17-0611"
+                    }
+                ],
+                "23": [
+                    {
+                        "day": "Thursday",
+                        "startTime": 1700,
+                        "endTime": 1800,
+                        "location": "S17-0404"
+                    }
+                ],
+                "26": [
+                    {
+                        "day": "Friday",
+                        "startTime": 1200,
+                        "endTime": 1300,
                         "location": "S17-0611"
                     }
                 ],
@@ -246,20 +282,6 @@
                 ]
             },
             "Lecture": {
-                "2": [
-                    {
-                        "day": "Thursday",
-                        "startTime": 1000,
-                        "endTime": 1200,
-                        "location": "LT11"
-                    },
-                    {
-                        "day": "Monday",
-                        "startTime": 1000,
-                        "endTime": 1200,
-                        "location": "LT11"
-                    }
-                ],
                 "1": [
                     {
                         "day": "Friday",
@@ -273,40 +295,18 @@
                         "endTime": 1000,
                         "location": "LT11"
                     }
-                ]
-            }
-        }
-    },
-    {
-        "moduleCode": "MA1522",
-        "MCs": 4,
-        "potentialLessons": {
-            "Lecture": {
-                "1": [
-                    {
-                        "day": "Monday",
-                        "startTime": 800,
-                        "endTime": 1000,
-                        "location": "LT11"
-                    },
-                    {
-                        "day": "Thursday",
-                        "startTime": 1600,
-                        "endTime": 1800,
-                        "location": "LT11"
-                    }
                 ],
                 "2": [
                     {
-                        "day": "Wednesday",
-                        "startTime": 800,
-                        "endTime": 1000,
+                        "day": "Thursday",
+                        "startTime": 1000,
+                        "endTime": 1200,
                         "location": "LT11"
                     },
                     {
-                        "day": "Friday",
-                        "startTime": 1600,
-                        "endTime": 1800,
+                        "day": "Monday",
+                        "startTime": 1000,
+                        "endTime": 1200,
                         "location": "LT11"
                     }
                 ]
@@ -317,74 +317,130 @@
         "moduleCode": "CS1101S",
         "MCs": 4,
         "potentialLessons": {
-            "Recitation": {
-                "18E": [
+            "Lecture": {
+                "1": [
                     {
-                        "day": "Thursday",
-                        "startTime": 1800,
-                        "endTime": 1900,
-                        "location": "COM3-02-60"
-                    }
-                ],
-                "16E": [
-                    {
-                        "day": "Thursday",
-                        "startTime": 1600,
-                        "endTime": 1700,
-                        "location": "COM3-02-60"
-                    }
-                ],
-                "15C": [
-                    {
-                        "day": "Thursday",
-                        "startTime": 1500,
-                        "endTime": 1600,
-                        "location": "COM3-01-25"
-                    }
-                ],
-                "11D": [
-                    {
-                        "day": "Thursday",
-                        "startTime": 1100,
+                        "day": "Friday",
+                        "startTime": 1000,
                         "endTime": 1200,
-                        "location": "COM3-B1-10"
+                        "location": "E-Learn_C"
+                    },
+                    {
+                        "day": "Wednesday",
+                        "startTime": 1000,
+                        "endTime": 1200,
+                        "location": "E-Learn_C"
                     }
-                ],
-                "09E": [
+                ]
+            },
+            "Recitation": {
+                "09A": [
                     {
                         "day": "Thursday",
                         "startTime": 900,
                         "endTime": 1000,
-                        "location": "COM3-02-60"
+                        "location": "COM4-02-02"
                     }
                 ],
-                "17E": [
+                "11A": [
                     {
                         "day": "Thursday",
-                        "startTime": 1700,
-                        "endTime": 1800,
-                        "location": "COM3-02-60"
+                        "startTime": 1100,
+                        "endTime": 1200,
+                        "location": "COM4-02-02"
                     }
                 ],
-                "14B": [
+                "14A": [
                     {
                         "day": "Thursday",
                         "startTime": 1400,
                         "endTime": 1500,
-                        "location": "COM3-01-22"
+                        "location": "COM4-02-02"
                     }
                 ],
-                "10E": [
+                "15A": [
+                    {
+                        "day": "Thursday",
+                        "startTime": 1500,
+                        "endTime": 1600,
+                        "location": "COM4-02-02"
+                    }
+                ],
+                "16A": [
+                    {
+                        "day": "Thursday",
+                        "startTime": 1600,
+                        "endTime": 1700,
+                        "location": "COM4-02-02"
+                    }
+                ],
+                "18A": [
+                    {
+                        "day": "Thursday",
+                        "startTime": 1800,
+                        "endTime": 1900,
+                        "location": "COM4-02-02"
+                    }
+                ],
+                "17D": [
+                    {
+                        "day": "Thursday",
+                        "startTime": 1700,
+                        "endTime": 1800,
+                        "location": "COM3-B1-10"
+                    }
+                ],
+                "10B": [
                     {
                         "day": "Thursday",
                         "startTime": 1000,
                         "endTime": 1100,
-                        "location": "COM3-02-60"
+                        "location": "COM3-01-22"
                     }
                 ]
             },
             "Tutorial": {
-                "07M": [
+                "03A": [
+                    {
+                        "day": "Monday",
+                        "startTime": 1200,
+                        "endTime": 1400,
+                        "location": "COM1-0210"
+                    }
+                ],
+                "01B": [
+                    {
+                        "day": "Monday",
+                        "startTime": 800,
+                        "endTime": 1000,
+                        "location": "COM1-0210"
+                    }
+                ],
+                "04A": [
+                    {
+                        "day": "Monday",
+                        "startTime": 1400,
+                        "endTime": 1600,
+                        "location": "COM1-0210"
+                    }
+                ],
+                "02B": [
+                    {
+                        "day": "Monday",
+                        "startTime": 1000,
+                        "endTime": 1200,
+                        "location": "COM1-0210"
+                    }
+                ],
+                "05K": [
+                    {
+                        "day": "Monday",
+                        "startTime": 1600,
+                        "endTime": 1800,
+                        "location": "COM1-0201"
+                    }
+                ],
+                "07L": [
                     {
                         "day": "Tuesday",
                         "startTime": 1000,
@@ -392,43 +448,27 @@
                         "location": "COM1-0201"
                     }
                 ],
-                "06H": [
-                    {
-                        "day": "Tuesday",
-                        "startTime": 800,
-                        "endTime": 1000,
-                        "location": "COM3-01-20"
-                    }
-                ],
-                "01C": [
-                    {
-                        "day": "Monday",
-                        "startTime": 800,
-                        "endTime": 1000,
-                        "location": "COM1-0210"
-                    }
-                ],
-                "03C": [
-                    {
-                        "day": "Monday",
-                        "startTime": 1200,
-                        "endTime": 1400,
-                        "location": "COM1-0210"
-                    }
-                ],
-                "08G": [
+                "08L": [
                     {
                         "day": "Tuesday",
                         "startTime": 1200,
                         "endTime": 1400,
-                        "location": "COM3-01-20"
+                        "location": "COM1-0201"
                     }
                 ],
-                "09G": [
+                "09L": [
                     {
                         "day": "Tuesday",
                         "startTime": 1400,
                         "endTime": 1600,
+                        "location": "COM1-0201"
+                    }
+                ],
+                "06F": [
+                    {
+                        "day": "Tuesday",
+                        "startTime": 800,
+                        "endTime": 1000,
                         "location": "COM3-01-20"
                     }
                 ],
@@ -439,46 +479,6 @@
                         "endTime": 1800,
                         "location": "COM3-01-20"
                     }
-                ],
-                "04B": [
-                    {
-                        "day": "Monday",
-                        "startTime": 1400,
-                        "endTime": 1600,
-                        "location": "COM1-0210"
-                    }
-                ],
-                "05B": [
-                    {
-                        "day": "Monday",
-                        "startTime": 1600,
-                        "endTime": 1800,
-                        "location": "COM1-0210"
-                    }
-                ],
-                "02G": [
-                    {
-                        "day": "Monday",
-                        "startTime": 1000,
-                        "endTime": 1200,
-                        "location": "COM3-01-20"
-                    }
-                ]
-            },
-            "Lecture": {
-                "1": [
-                    {
-                        "day": "Wednesday",
-                        "startTime": 1000,
-                        "endTime": 1200,
-                        "location": "E-Learn_C"
-                    },
-                    {
-                        "day": "Friday",
-                        "startTime": 1000,
-                        "endTime": 1200,
-                        "location": "E-Learn_C"
-                    }
                 ]
             }
         }
@@ -488,43 +488,43 @@
         "MCs": 4,
         "potentialLessons": {
             "Tutorial": {
-                "24C": [
+                "12B": [
+                    {
+                        "day": "Wednesday",
+                        "startTime": 1000,
+                        "endTime": 1200,
+                        "location": "COM1-0201"
+                    }
+                ],
+                "21B": [
                     {
                         "day": "Friday",
-                        "startTime": 1400,
-                        "endTime": 1600,
-                        "location": "COM1-0209"
+                        "startTime": 800,
+                        "endTime": 1000,
+                        "location": "COM1-0203"
                     }
                 ],
-                "03D": [
-                    {
-                        "day": "Monday",
-                        "startTime": 1200,
-                        "endTime": 1400,
-                        "location": "COM1-0207"
-                    }
-                ],
-                "08D": [
-                    {
-                        "day": "Tuesday",
-                        "startTime": 1200,
-                        "endTime": 1400,
-                        "location": "COM1-0209"
-                    }
-                ],
-                "20B": [
+                "16A": [
                     {
                         "day": "Thursday",
-                        "startTime": 1600,
-                        "endTime": 1800,
-                        "location": "COM1-0207"
+                        "startTime": 800,
+                        "endTime": 1000,
+                        "location": "COM1-0201"
                     }
                 ],
-                "04B": [
+                "25A": [
+                    {
+                        "day": "Friday",
+                        "startTime": 1600,
+                        "endTime": 1800,
+                        "location": "COM1-0201"
+                    }
+                ],
+                "02B": [
                     {
                         "day": "Monday",
-                        "startTime": 1400,
-                        "endTime": 1600,
+                        "startTime": 1000,
+                        "endTime": 1200,
                         "location": "COM3-01-23"
                     }
                 ],
@@ -533,6 +533,38 @@
                         "day": "Wednesday",
                         "startTime": 1200,
                         "endTime": 1400,
+                        "location": "COM1-0201"
+                    }
+                ],
+                "11B": [
+                    {
+                        "day": "Wednesday",
+                        "startTime": 800,
+                        "endTime": 1000,
+                        "location": "COM1-0201"
+                    }
+                ],
+                "04A": [
+                    {
+                        "day": "Monday",
+                        "startTime": 1400,
+                        "endTime": 1600,
+                        "location": "COM1-0208"
+                    }
+                ],
+                "09A": [
+                    {
+                        "day": "Tuesday",
+                        "startTime": 1400,
+                        "endTime": 1600,
+                        "location": "COM1-0208"
+                    }
+                ],
+                "19A": [
+                    {
+                        "day": "Thursday",
+                        "startTime": 1400,
+                        "endTime": 1600,
                         "location": "COM1-0201"
                     }
                 ],
@@ -552,28 +584,44 @@
                         "location": "COM1-0201"
                     }
                 ],
-                "25B": [
+                "06B": [
                     {
-                        "day": "Friday",
+                        "day": "Tuesday",
+                        "startTime": 800,
+                        "endTime": 1000,
+                        "location": "COM3-01-23"
+                    }
+                ],
+                "07A": [
+                    {
+                        "day": "Tuesday",
+                        "startTime": 1000,
+                        "endTime": 1200,
+                        "location": "COM1-0203"
+                    }
+                ],
+                "08A": [
+                    {
+                        "day": "Tuesday",
+                        "startTime": 1200,
+                        "endTime": 1400,
+                        "location": "COM1-0203"
+                    }
+                ],
+                "20A": [
+                    {
+                        "day": "Thursday",
                         "startTime": 1600,
                         "endTime": 1800,
-                        "location": "COM1-0203"
-                    }
-                ],
-                "21B": [
-                    {
-                        "day": "Friday",
-                        "startTime": 800,
-                        "endTime": 1000,
-                        "location": "COM1-0203"
-                    }
-                ],
-                "11B": [
-                    {
-                        "day": "Wednesday",
-                        "startTime": 800,
-                        "endTime": 1000,
                         "location": "COM1-0201"
+                    }
+                ],
+                "03D": [
+                    {
+                        "day": "Monday",
+                        "startTime": 1200,
+                        "endTime": 1400,
+                        "location": "COM1-0207"
                     }
                 ],
                 "01B": [
@@ -592,68 +640,20 @@
                         "location": "COM1-0201"
                     }
                 ],
-                "06A": [
+                "24C": [
                     {
-                        "day": "Tuesday",
-                        "startTime": 800,
-                        "endTime": 1000,
-                        "location": "COM1-0203"
-                    }
-                ],
-                "07C": [
-                    {
-                        "day": "Tuesday",
-                        "startTime": 1000,
-                        "endTime": 1200,
-                        "location": "COM1-0208"
-                    }
-                ],
-                "02B": [
-                    {
-                        "day": "Monday",
-                        "startTime": 1000,
-                        "endTime": 1200,
-                        "location": "COM3-01-23"
-                    }
-                ],
-                "09A": [
-                    {
-                        "day": "Tuesday",
+                        "day": "Friday",
                         "startTime": 1400,
                         "endTime": 1600,
-                        "location": "COM1-0208"
+                        "location": "COM1-0209"
                     }
                 ],
-                "19A": [
-                    {
-                        "day": "Thursday",
-                        "startTime": 1400,
-                        "endTime": 1600,
-                        "location": "COM1-0201"
-                    }
-                ],
-                "16A": [
-                    {
-                        "day": "Thursday",
-                        "startTime": 800,
-                        "endTime": 1000,
-                        "location": "COM1-0201"
-                    }
-                ],
-                "12A": [
-                    {
-                        "day": "Wednesday",
-                        "startTime": 1000,
-                        "endTime": 1200,
-                        "location": "COM3-02-60"
-                    }
-                ],
-                "10A": [
+                "10B": [
                     {
                         "day": "Tuesday",
                         "startTime": 1600,
                         "endTime": 1800,
-                        "location": "COM1-0114"
+                        "location": "COM1-0113"
                     }
                 ]
             },
@@ -671,6 +671,20 @@
                         "endTime": 1400,
                         "location": "LT11"
                     }
+                ],
+                "2": [
+                    {
+                        "day": "Thursday",
+                        "startTime": 1200,
+                        "endTime": 1400,
+                        "location": "E-Learn_C"
+                    },
+                    {
+                        "day": "Friday",
+                        "startTime": 1300,
+                        "endTime": 1400,
+                        "location": "E-Learn_C"
+                    }
                 ]
             }
         }
@@ -679,7 +693,25 @@
         "moduleCode": "ST1131",
         "MCs": 4,
         "potentialLessons": {
+            "Lecture": {
+                "1": [
+                    {
+                        "day": "Monday",
+                        "startTime": 1600,
+                        "endTime": 1800,
+                        "location": "LT32"
+                    }
+                ]
+            },
             "Tutorial": {
+                "1": [
+                    {
+                        "day": "Thursday",
+                        "startTime": 900,
+                        "endTime": 1000,
+                        "location": "S16-0520"
+                    }
+                ],
                 "7": [
                     {
                         "day": "Thursday",
@@ -688,19 +720,11 @@
                         "location": "S16-0520"
                     }
                 ],
-                "6": [
+                "8": [
                     {
                         "day": "Thursday",
-                        "startTime": 1400,
-                        "endTime": 1500,
-                        "location": "S16-0520"
-                    }
-                ],
-                "1": [
-                    {
-                        "day": "Thursday",
-                        "startTime": 900,
-                        "endTime": 1000,
+                        "startTime": 1600,
+                        "endTime": 1700,
                         "location": "S16-0520"
                     }
                 ],
@@ -720,19 +744,11 @@
                         "location": "S16-0520"
                     }
                 ],
-                "8": [
+                "6": [
                     {
                         "day": "Thursday",
-                        "startTime": 1600,
-                        "endTime": 1700,
-                        "location": "S16-0520"
-                    }
-                ],
-                "4": [
-                    {
-                        "day": "Thursday",
-                        "startTime": 1200,
-                        "endTime": 1300,
+                        "startTime": 1400,
+                        "endTime": 1500,
                         "location": "S16-0520"
                     }
                 ],
@@ -743,15 +759,13 @@
                         "endTime": 1200,
                         "location": "S16-0520"
                     }
-                ]
-            },
-            "Lecture": {
-                "1": [
+                ],
+                "4": [
                     {
-                        "day": "Monday",
-                        "startTime": 1600,
-                        "endTime": 1800,
-                        "location": "LT32"
+                        "day": "Thursday",
+                        "startTime": 1200,
+                        "endTime": 1300,
+                        "location": "S16-0520"
                     }
                 ]
             }

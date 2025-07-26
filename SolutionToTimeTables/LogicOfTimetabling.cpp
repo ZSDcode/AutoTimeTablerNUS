@@ -12,6 +12,7 @@
 #include <functional> // For std::function
 #include <filesystem>
 #include <queue>
+#include <set>
 using namespace std;
 
 enum class WeekDay {MON, TUE, WED, THU, FRI, SAT, SUN};
@@ -22,7 +23,8 @@ struct TimeSlot {
     int startTime;
     int endTime;
     string location;
-    TimeSlot(string d, int s, int e, string loc) : startTime(s), endTime(e), location(move(loc)) {
+    string classNo;
+    TimeSlot(string cN, string d, int s, int e, string loc) : classNo(cN), startTime(s), endTime(e), location(move(loc)) {
         static const map<string, WeekDay> strToWeekDayConvert = {
             {"Monday", WeekDay::MON},
             {"Tuesday", WeekDay::TUE},
@@ -839,7 +841,7 @@ int main(int argc, char* argv[]) {
             for (auto& [classNo, lessonGroup] : classes.items()) {
                 vector<TimeSlot> timeSlotGroup;
                 for (size_t i{0}; i < lessonGroup.size(); i++) {
-                    TimeSlot slot(lessonGroup[i].at("day").get<string>(), lessonGroup[i].at("startTime").get<int>(), lessonGroup[i].at("endTime").get<int>(), lessonGroup[i].at("location").get<string>());
+                    TimeSlot slot(classNo, lessonGroup[i].at("day").get<string>(), lessonGroup[i].at("startTime").get<int>(), lessonGroup[i].at("endTime").get<int>(), lessonGroup[i].at("location").get<string>());
                     timeSlotGroup.push_back(slot);
                 }
                 opt.push_back(timeSlotGroup);
@@ -868,7 +870,7 @@ int main(int argc, char* argv[]) {
             {"sun", "Sunday"}
         };
         for (size_t i{0}; i < blockedData.size(); i++) {
-            blocked.push_back(TimeSlot(mappingForBlock[blockedData[i].at("day").get<string>()],blockedData[i].at("startTime").get<int>(), blockedData[i].at("endTime").get<int>(), "Nil"));
+            blocked.push_back(TimeSlot("Personal", mappingForBlock[blockedData[i].at("day").get<string>()],blockedData[i].at("startTime").get<int>(), blockedData[i].at("endTime").get<int>(), "Nil"));
         }
     }
     try {
@@ -890,26 +892,6 @@ int main(int argc, char* argv[]) {
         endMini = std::chrono::high_resolution_clock::now();
         duration = endMini - startMini;
         cout << "Duration to score all Timetables: " << duration.count() << " seconds. \n";
-        /*vector<TimeTable*> dupesMadd{};
-        int noOfSlots = allPossible[0].size();
-        for (size_t i{0}; i < allPossible.size()-1; i++) {
-            for (size_t j{i+1}; j < allPossible.size(); j++) {
-                if (checkRedundancy(allPossible[i], allPossible[j], noOfSlots-1)) {
-                    dupesMadd.push_back(&(allPossible[i]));
-                    break;
-                }
-            }
-        }
-        for (size_t i{0}; i < dupesMadd.size(); i++) {
-            timetableToScore.erase(dupesMadd[i]);
-        }
-        startMini = std::chrono::high_resolution_clock::now();
-        duration = startMini - endMini;
-        cout << "Number of Redundant Mods: " << dupesMadd.size() << "\n";
-        cout << "Number of Slots: " << noOfSlots << "\n";
-        cout << "Duration to find all redundant Timetables: " << duration.count() << " seconds. \n";
-        cout << "Number of mapped Timetables: " << timetableToScore.size() << "\n";
-        */
         auto sortCmd = [&timetableToScore](const TimeTable* a, const TimeTable* b) {
             return (timetableToScore[a] < timetableToScore[b]);
         };
@@ -926,16 +908,54 @@ int main(int argc, char* argv[]) {
         }
         startMini = std::chrono::high_resolution_clock::now();
         duration = startMini - endMini;
+        vector<TimeTable> topTables;
         cout << "Duration to sort all Timetables: " << duration.count() << " seconds. \n";
-        //vector<TimeTable>  allGoodTimetables{};
         for (size_t i{0}; i < timetablesGenerated; i++) {
             cout << "Timetable " << timetablesGenerated - i << ": \n";
+            topTables.push_back(*(topX.top()));
             printTimetable(*(topX.top()));
             cout << "Timetable score: " << timetableToScore[topX.top()] << "\n" << "\n";
-            //allGoodTimetables.push_back(*(topX.top()));
             topX.pop();
         }
-        //cout << checkRedundancy(allGoodTimetables[0], allGoodTimetables[1], noOfSlots * 3/4);
+        string nusModsURL = "https://nusmods.com/timetable/sem-" + to_string(mult["semester"].get<int>()) + "/share?";
+        for (TimeTable tables : topTables) {
+            cout << "Timetable " << to_string(timetablesGenerated) << ": ";
+            unordered_map<string, set<string>> modToClasses{};
+            for (auto& slotMacro : tables) {
+                string lesson;
+                switch (slotMacro.lesson) {
+                    case (SlotType::LEC):
+                    lesson = "LEC";
+                    break;
+                    case (SlotType::TUT):
+                    lesson = "TUT";
+                    break;
+                    case (SlotType::REC):
+                    lesson = "REC";
+                    break;
+                    case (SlotType::SEC):
+                    lesson = "SEC";
+                    break;
+                    case (SlotType::LAB):
+                    lesson = "LAB";
+                    break;
+                    default: lesson = "UNK" ; break;
+                }
+                lesson += ':' + slotMacro.slot[0].classNo;
+                modToClasses[slotMacro.modCode].insert(lesson);
+            }
+            for (auto it = modToClasses.begin(); it != modToClasses.end(); it++) {
+                nusModsURL += it->first + '=';
+                for (const auto& classes : it->second) {
+                    nusModsURL += classes + ',';
+                }
+                nusModsURL.pop_back();
+                nusModsURL += '&';
+            }
+            nusModsURL.pop_back();
+            cout << nusModsURL << "\n";
+            timetablesGenerated -= 1;
+        }
         auto end = std::chrono::high_resolution_clock::now();
         duration = end - start;
         cout << "Execution time: " << duration.count() << " seconds." << "\n";

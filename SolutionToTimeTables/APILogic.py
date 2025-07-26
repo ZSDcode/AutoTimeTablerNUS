@@ -116,7 +116,7 @@ modData = []
 def gettingNumberOfBlockPeriods():
     while True:
         try:
-            numberStr = input("How many block periods would you like to input: ")
+            numberStr = input("Block periods are periods where you don't want your time to be taken in any slot. \nHow many block periods would you like to input: ")
             if ('.' in numberStr):
                 print("Please input a non-negative integer")
             else:
@@ -205,11 +205,13 @@ blockPeriodList = gettingBlockPeriod(blockPeriodNumber)
 
 def getMult():
     print("Right now, you'll be inputting multiple values on the scale of 1 to 10 (of course you can weight higher or even negative up to preference). " 
-    "\n This is to evaluate your possible timetables to find your best one posible")
+    "\nThis is to evaluate your possible timetables to find your best one posible"
+    "\nThe higher the value you input implies you care more about that particular aspect in your timetable"
+    "\nYou shouldn't put the same number for every multiplier unless you want equal weightage across the board")
     multipliers = {}
     while True:
         try:
-            freeDayMultStr = input("Please input how heavily you want to weigh Free Days: ")
+            freeDayMultStr = input("How badly do you want free days (from 1 to 10): ")
             freeDayMult = float(freeDayMultStr)
             if (freeDayMult > 10 or freeDayMult < 0):
                 print("Please enter a number from 0 - 10")
@@ -236,7 +238,7 @@ def getMult():
             print("Please enter a valid time")
     while True:
         try:
-            startTimeMultStr = input("Please input how heavily you want to weigh start time (later the better): ")
+            startTimeMultStr = input("Out of 10, how badly do you want to start later: ")
             startTimeMult = float(startTimeMultStr)
             if (startTimeMult > 10 or startTimeMult < 0):
                 print("Please enter a number from 0 - 10")
@@ -262,7 +264,7 @@ def getMult():
             print("Please enter a valid time")
     while True:
         try:
-            endTimeMultStr = input("Please input how heavily you want to weigh end time (earlier the better): ")
+            endTimeMultStr = input("Out of 10, how badly do you want to end earlier: ")
             endTimeMult = float(endTimeMultStr)
             if (endTimeMult > 10 or endTimeMult < 0):
                 print("Please enter a number from 0 - 10")
@@ -274,7 +276,7 @@ def getMult():
     while True:
         try:
             multipliers["gapTimeMult"] = []
-            optGapTimeStr = input("Please put the optimal gap time you wish to have per day, in hours: ")
+            optGapTimeStr = input("Please enter how much free time you want to have across the day in between lectures (in hours). This number represents the optimal amount of time measured as breaks from first to last class: ")
             optimalGapTime = float(optGapTimeStr)
             if (optimalGapTime < 0 or optimalGapTime > 10):
                 print("Please input a non-negative number smaller than 10")
@@ -285,10 +287,10 @@ def getMult():
             print("Please input a non-negative number")
     while True:
         try:
-            gapTimeMultStr = input("Please input how heavily you want to weigh gap time (closer to you optimal, the better): ")
+            gapTimeMultStr = input("How badly do you want the amount of gaps to align to your declared gap time (again out of 10): ")
             gapTimeMult = float(gapTimeMultStr)
             if (gapTimeMult > 10 or gapTimeMult < 0):
-                print("Please enter a number fro 0 to 10")
+                print("Please enter a number from 0 to 10")
             else:
                 multipliers["gapTimeMult"].append(gapTimeMult)
                 break
@@ -296,19 +298,22 @@ def getMult():
             print("Please enter a number from 0 - 10")
     while True:
         try:
-            noOfTimetablesStr = input("How many Timetables would you like to print: ")
+            noOfTimetablesStr = input("How many Timetables would you like to print (max of 10): ")
             if ('.' in noOfTimetablesStr):
                 print("Please enter a positive integer")
             else:
                 noOfTimetables = int(noOfTimetablesStr)
-                multipliers["noOfTimetables"] = noOfTimetables
-                break
+                if (noOfTimetables > 10):
+                    print("Please input a positive integer smaller than 10")
+                else:
+                    multipliers["noOfTimetables"] = noOfTimetables
+                    break
         except ValueError as e:
             print("Please enter a positive integer")
     print("In this program, we also made a feature to take location into account.")
     while True:
         try:
-            locationAccInputStr = input("If you would like to take location into account, enter 1. Otherwise, enter 0: ")
+            locationAccInputStr = input("If you would like to take location into account (i.e. you want appropriate timings t travel between classes), enter 1. Otherwise, enter 0: ")
             locationInput = int(locationAccInputStr)
             if (locationInput != 1 and locationInput != 0):
                 print("Please enter either 1 (for yes), or 0 (for no)")
@@ -338,8 +343,34 @@ def getELearn():
         except ValueError as e:
             print("Please enter 1 (for yes) or 0 (for no)")
 
-multipliers = getMult()
-eLearnInput = getELearn()
+def getChangeMultipliers():
+    while True:
+        try:
+            inputStr = input("Do you want to change your current setup multipliers? Enter yes or no only: ").lower()
+            if (inputStr not in ["yes", "no"]):
+                print("Please enter yes or no only")
+            else:
+                return inputStr
+        except Exception as e:
+            print(f"An Unknown Error occurred: {e}, please re-enter your input")
+
+baseDir = os.path.dirname(os.path.abspath(__file__))
+exePath = os.path.join(baseDir, "LogicOfTimetabling.exe")
+moduleJsonPath = os.path.join(baseDir, "ModuleData.json")
+blockPeriodPath = os.path.join(baseDir, "BlockPeriodFromUser.json")
+multipliersPath = os.path.join(baseDir, "Multipliers.json")
+if os.path.exists(multipliersPath):
+    changeInput = getChangeMultipliers()
+    if (changeInput == "yes"):
+        multipliers = getMult()
+    else:
+        with open(multipliersPath, "r") as f:
+            multipliers = json.load(f)
+    eLearnInput = getELearn()
+else:
+    multipliers = getMult()
+    eLearnInput = getELearn()
+multipliers["semester"] = semNo
 
 for mod in modCodeList:
     particularModData = {}
@@ -395,12 +426,6 @@ for mod in modCodeList:
                     del intermediateGroupedLessons[lessonType][dupeClass]
     particularModData["potentialLessons"] = intermediateGroupedLessons
     modData.append(particularModData)
-baseDir = os.path.dirname(os.path.abspath(__file__))
-exePath = os.path.join(baseDir, "LogicOfTimetabling.exe")
-moduleJsonPath = os.path.join(baseDir, "ModuleData.json")
-blockPeriodPath = os.path.join(baseDir, "BlockPeriodFromUser.json")
-multipliersPath = os.path.join(baseDir, "Multipliers.json")
-
 with open(moduleJsonPath, "w") as f:
     json.dump(modData, f, indent=4)
 with open(blockPeriodPath, "w") as f:
